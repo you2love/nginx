@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 指令与配置</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx</h1>
+                <p class="tagline">AI时代的高性能Web服务器</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="commands.html" class="nav-link active">指令与配置</a>
+                <a href="ai-tools.html" class="nav-link ai-highlight">AI工具</a>
+                <a href="practice.html" class="nav-link">实战篇</a>
+                <a href="resources.html" class="nav-link">学习资源</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">💻 指令与配置</h2>
+
+                <div class="commands-intro">
+                    <p>掌握Nginx核心指令和配置语法，是构建高性能Web服务的基础</p>
+                </div>
+
+                <h3 class="subsection-title">核心指令</h3>
+                <div class="commands-grid">
+                    <div class="command-card">
+                        <h4>server</h4>
+                        <div class="command-code">server { ... }</div>
+                        <p>定义虚拟主机配置块，用于设置单个服务器的监听端口、域名等</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>server {
+    listen 80;
+    server_name example.com;
+    ...
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>location</h4>
+                        <div class="command-code">location [=|~|~*|^~] uri { ... }</div>
+                        <p>匹配请求URI，定义特定路径的处理规则</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>location /api {
+    proxy_pass http://backend;
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>proxy_pass</h4>
+                        <div class="command-code">proxy_pass URL;</div>
+                        <p>将请求代理到后端服务器</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>proxy_pass http://127.0.0.1:3000;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>upstream</h4>
+                        <div class="command-code">upstream name { ... }</div>
+                        <p>定义后端服务器组，用于负载均衡</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>upstream backend {
+    server 192.168.1.10:3000 weight=3;
+    server 192.168.1.11:3000 weight=2;
+    server 192.168.1.12:3000 backup;
+    keepalive 32;
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>listen</h4>
+                        <div class="command-code">listen address[:port] [options];</div>
+                        <p>指定服务器监听的地址和端口</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>listen 80;
+listen 443 ssl;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>root</h4>
+                        <div class="command-code">root path;</div>
+                        <p>设置静态文件的根目录</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>root /var/www/html;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>alias</h4>
+                        <div class="command-code">alias path;</div>
+                        <p>为location指定不同的文件系统路径</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>location /img {
+    alias /var/images;
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>proxy_set_header</h4>
+                        <div class="command-code">proxy_set_header field value;</div>
+                        <p>设置代理请求头，传递客户端信息到后端</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>limit_req</h4>
+                        <div class="command-code">limit_req zone=name burst=number [nodelay];</div>
+                        <p>请求限流，防止DDoS攻击</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+
+location /api {
+    limit_req zone=api_limit burst=20 nodelay;
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>proxy_cache</h4>
+                        <div class="command-code">proxy_cache zone | off;</div>
+                        <p>启用代理缓存，提升响应速度</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>proxy_cache my_cache;
+proxy_cache_valid 200 302 10m;
+proxy_cache_valid 404 1m;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>ssl_certificate</h4>
+                        <div class="command-code">ssl_certificate file;</div>
+                        <p>指定SSL证书文件路径</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;</pre>
+                        </div>
+                    </div>
+
+                    <div class="command-card">
+                        <h4>gzip</h4>
+                        <div class="command-code">gzip on | off;</div>
+                        <p>启用gzip压缩，减少传输数据量</p>
+                        <div class="command-example">
+                            <strong>示例：</strong>
+                            <pre>gzip on;
+gzip_vary on;
+gzip_min_length 1024;
+gzip_types text/plain text/css application/json application/javascript;</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="subsection-title">常用变量</h3>
+                <div class="variables-grid">
+                    <div class="variable-item">
+                        <code>$scheme</code>
+                        <span>请求协议（http/https）</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$host</code>
+                        <span>请求的主机名</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$uri</code>
+                        <span>请求的URI（不含参数）</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$request_uri</code>
+                        <span>完整的请求URI（含参数）</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$remote_addr</code>
+                        <span>客户端IP地址</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$http_user_agent</code>
+                        <span>客户端User-Agent</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$request_method</code>
+                        <span>请求方法（GET/POST等）</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$request_time</code>
+                        <span>请求处理时间</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$upstream_addr</code>
+                        <span>后端服务器地址</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$upstream_status</code>
+                        <span>后端状态码</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$upstream_response_time</code>
+                        <span>后端响应时间</span>
+                    </div>
+                    <div class="variable-item">
+                        <code>$upstream_cache_status</code>
+                        <span>缓存状态</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <p style="color: #666;">查看更多指令，请参考 <a href="https://nginx.org/en/docs/" target="_blank" style="color: #009639;">Nginx官方文档</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Nginx教程 - AI时代的高性能Web服务器</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 实战篇</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx</h1>
+                <p class="tagline">AI时代的高性能Web服务器</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="commands.html" class="nav-link">指令与配置</a>
+                <a href="ai-tools.html" class="nav-link ai-highlight">AI工具</a>
+                <a href="practice.html" class="nav-link active">实战篇</a>
+                <a href="resources.html" class="nav-link">学习资源</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">实战篇 - 最佳实践</h2>
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3>🏗️ 微服务架构</h3>
+                        <ul>
+                            <li>服务发现集成</li>
+                            <li>API网关配置</li>
+                            <li>服务间通信优化</li>
+                            <li>熔断与降级策略</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3>📱 移动应用后端</h3>
+                        <ul>
+                            <li>RESTful API设计</li>
+                            <li>WebSocket实时通信</li>
+                            <li>推送服务配置</li>
+                            <li>移动端优化策略</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3>🎥 媒体流服务</h3>
+                        <ul>
+                            <li>视频流配置</li>
+                            <li>直播推拉流设置</li>
+                            <li>HLS/DASH协议支持</li>
+                            <li>转码与分发优化</li>
+                        </ul>
+                    </div>
+                    <div class="content-card">
+                        <h3>🌍 全球部署</h3>
+                        <ul>
+                            <li>多地域架构设计</li>
+                            <li>GeoDNS配置</li>
+                            <li>跨区域负载均衡</li>
+                            <li>边缘计算集成</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section bg-light">
+            <div class="container">
+                <h2 class="section-title">📚 实战案例</h2>
+                <div class="case-grid">
+                    <div class="case-item">
+                        <h4>电商网站高并发</h4>
+                        <pre><code># 电商网站高并发配置
+user nginx;
+worker_processes auto;
+worker_rlimit_nofile 100000;
+
+events {
+    worker_connections 100000;
+    use epoll;
+    multi_accept on;
+}
+
+http {
+    # 静态资源服务器集群
+    upstream static_servers {
+        least_conn;
+        server 10.0.1.10:80 weight=3;
+        server 10.0.1.11:80 weight=3;
+        keepalive 64;
+    }
+
+    # 商品API服务器集群
+    upstream product_api {
+        ip_hash;
+        server 10.0.2.10:3000 max_fails=3 fail_timeout=30s;
+        server 10.0.2.11:3000 max_fails=3 fail_timeout=30s;
+        keepalive 32;
+    }
+
+    # 限流配置
+    limit_req_zone $binary_remote_addr zone=api_limit:100m rate=100r/s;
+
+    server {
+        listen 443 ssl http2;
+        server_name shop.example.com;
+
+        # 商品搜索接口
+        location /api/products/search {
+            limit_req zone=api_limit burst=100 nodelay;
+            proxy_pass http://product_api;
+            proxy_cache search_cache;
+            proxy_cache_valid 200 10m;
+        }
+    }
+}</code></pre>
+                    </div>
+                    <div class="case-item">
+                        <h4>AI服务网关</h4>
+                        <pre><code># AI服务网关配置
+upstream ai_model_servers {
+    server 10.0.1.10:8000 weight=5;
+    server 10.0.1.11:8000 weight=5;
+    keepalive 64;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ai-gateway.example.com;
+
+    # 文本生成API
+    location /api/text/generate {
+        limit_req zone=text_api burst=10 nodelay;
+        proxy_pass http://ai_model_servers;
+        proxy_read_timeout 30s;
+    }
+
+    # 图像生成API
+    location /api/image/generate {
+        limit_req zone=image_api burst=3 nodelay;
+        proxy_pass http://ai_model_servers;
+        proxy_read_timeout 120s;
+        client_max_body_size 10m;
+    }
+}</code></pre>
+                    </div>
+                    <div class="case-item">
+                        <h4>实时通讯平台</h4>
+                        <pre><code># 实时通讯平台 WebSocket 配置
+user nginx;
+worker_processes auto;
+worker_rlimit_nofile 1000000;
+
+events {
+    worker_connections 1000000;
+    use epoll;
+    multi_accept on;
+}
+
+http {
+    # WebSocket 服务器集群
+    upstream websocket_backend {
+        server 10.0.1.10:8080 weight=5 max_fails=3 fail_timeout=60s;
+        server 10.0.1.11:8080 weight=5 max_fails=3 fail_timeout=60s;
+        server 10.0.1.12:8080 weight=5 max_fails=3 fail_timeout=60s;
+        server 10.0.1.13:8080 weight=5 max_fails=3 fail_timeout=60s;
+        keepalive 1024;
+    }
+
+    # 连接数限流（按用户）
+    limit_conn_zone $binary_remote_addr zone=ws_conn_limit:100m;
+
+    # WebSocket升级协议映射
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+
+    # 根据请求路径设置不同的超时时间
+    map $request_uri $ws_timeout {
+        default 1d;
+        ~^/chat 7d;
+        ~^/video 1h;
+    }
+
+    server {
+        listen 80;
+        listen 443 ssl http2;
+        server_name ws.example.com;
+
+        # SSL配置
+        ssl_certificate /etc/ssl/certs/ws.example.com.crt;
+        ssl_certificate_key /etc/ssl/private/ws.example.com.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_session_cache shared:SSL:100m;
+
+        # 全局连接数限制
+        limit_conn ws_conn_limit 10;
+
+        # WebSocket 连接
+        location /ws {
+            proxy_pass http://websocket_backend;
+            proxy_http_version 1.1;
+
+            # WebSocket 升级头
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+
+            # 传递客户端信息
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # 超时配置（WebSocket长连接）
+            proxy_connect_timeout 7d;
+            proxy_send_timeout 7d;
+            proxy_read_timeout 7d;
+
+            # 禁用缓冲
+            proxy_buffering off;
+            proxy_request_buffering off;
+
+            # 连接保持
+            proxy_socket_keepalive on;
+        }
+
+        # 聊天室 WebSocket
+        location /chat {
+            proxy_pass http://websocket_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Host $host;
+
+            # 聊天室超时更长
+            proxy_connect_timeout 7d;
+            proxy_send_timeout 7d;
+            proxy_read_timeout 7d;
+            proxy_buffering off;
+        }
+
+        # 视频通话 WebSocket
+        location /video {
+            proxy_pass http://websocket_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $connection_upgrade;
+            proxy_set_header Host $host;
+
+            # 视频通话超时较短
+            proxy_connect_timeout 2h;
+            proxy_send_timeout 2h;
+            proxy_read_timeout 2h;
+            proxy_buffering off;
+
+            # 支持更大的消息体
+            client_max_body_size 100m;
+        }
+
+        # 心跳检测
+        location /heartbeat {
+            access_log off;
+            return 200 "OK";
+        }
+
+        # WebSocket 统计（内部）
+        location /internal/ws-stats {
+            internal;
+            stub_status;
+            access_log off;
+        }
+    }
+
+    # 管理监控服务器
+    server {
+        listen 8080;
+        server_name ws-monitor.example.com;
+        allow 192.168.1.0/24;
+        deny all;
+
+        location /stats {
+            stub_status;
+            access_log /var/log/nginx/ws_stats.log;
+        }
+
+        location /metrics {
+            # Prometheus 指标输出
+            access_log off;
+            return 200 'nginx_ws_connections_total\nnginx_ws_active_connections\n';
+        }
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🎯 最佳实践配置</h2>
+
+                <div class="practice-item">
+                    <h4>1. 高并发优化配置</h4>
+                    <pre><code>user nginx;
+worker_processes auto;
+worker_rlimit_nofile 65535;
+
+events {
+    worker_connections 65535;
+    use epoll;
+    multi_accept on;
+}
+
+http {
+    keepalive_timeout 30;
+    keepalive_requests 1000;
+    client_body_buffer_size 128k;
+    client_max_body_size 10m;
+    open_file_cache max=65535 inactive=20s;
+}</code></pre>
+                </div>
+
+                <div class="practice-item">
+                    <h4>2. SSL/TLS最佳实践</h4>
+                    <pre><code>server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+    ssl_session_cache shared:SSL:10m;
+    ssl_stapling on;
+
+    add_header Strict-Transport-Security "max-age=63072000" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+}</code></pre>
+                </div>
+
+                <div class="practice-item">
+                    <h4>3. 限流与防护配置</h4>
+                    <pre><code>limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+
+server {
+    location /api {
+        limit_req zone=api_limit burst=20 nodelay;
+        limit_req_status 429;
+        proxy_pass http://backend;
+    }
+
+    allow 192.168.1.0/24;
+    deny all;
+}</code></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Nginx教程 - AI时代的高性能Web服务器</p>
+        </div>
+    </footer>
+</body>
+</html>
