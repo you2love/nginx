@@ -215,22 +215,6 @@
     <main>
         <section class="section">
             <div class="container">
-                <h2 class="section-title">🔌 Nginx 插件系统</h2>
-                <p class="page-intro">
-                    Nginx 拥有丰富的模块生态系统，包括官方模块和第三方模块。
-                    第三方模块可以扩展 Nginx 的功能，满足各种特殊需求。
-                    本页面按知名度从高到低介绍常用的第三方模块。
-                </p>
-
-                <div class="warning-box">
-                    <strong>⚠️ 注意事项：</strong>
-                    <ul style="margin: 10px 0 0 20px; line-height: 2;">
-                        <li>第三方模块需要重新编译 Nginx，无法通过包管理器直接安装</li>
-                        <li>使用前请确认模块与 Nginx 版本的兼容性</li>
-                        <li>生产环境使用前建议充分测试</li>
-                    </ul>
-                </div>
-
                 <!-- 第一类：热门模块 -->
                 <div class="plugin-category">
                     <h3>🔥 热门模块（知名度 ★★★★★）</h3>
@@ -621,6 +605,308 @@ luarocks install lua-resty-http
                     </div>
                 </div>
 
+                <!-- 第五类：性能优化模块 -->
+                <div class="plugin-category">
+                    <h3>⚡ 性能优化模块（知名度 ★★☆☆☆）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ngx_cache_purge
+                        <span class="plugin-rank">NO.9</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">缓存</span>
+                        <span class="plugin-tag">性能优化</span>
+                    </div>
+                    <p>
+                        <strong>ngx_cache_purge</strong> 提供 Nginx 缓存清除功能，
+                        支持按 URL 清除特定缓存、批量清除缓存。对于需要实时更新内容的场景非常有用。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/FRiCKLabs/ngx_cache_purge.git
+./configure --add-module=/path/to/ngx_cache_purge
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>按 URL 清除缓存</li>
+                        <li>支持通配符批量清除</li>
+                        <li>HTTP API 接口</li>
+                        <li>与 proxy_cache 完美集成</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">proxy_cache_path</span> <span class="value">/var/cache/nginx levels=1:2 keys_zone=my_cache:10m</span>;
+    
+    <span class="keyword">server</span> {
+        <span class="keyword">location</span> <span class="value">/</span> {
+            <span class="directive">proxy_cache</span> <span class="value">my_cache</span>;
+            <span class="directive">proxy_cache_purge</span> <span class="value">PURGE from 127.0.0.1</span>;
+        }
+    }
+}
+
+<span class="comment"># 清除缓存请求</span>
+<span class="keyword">PURGE</span> <span class="value">http://example.com/image.jpg</span></pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>CMS 内容更新、商品图片刷新、API 缓存失效、静态资源更新。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        headers-more-nginx-module
+                        <span class="plugin-rank">NO.10</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Header</span>
+                        <span class="plugin-tag">安全</span>
+                    </div>
+                    <p>
+                        <strong>headers-more</strong> 模块允许添加、修改、清除任意 HTTP 响应头，
+                        包括 Nginx 默认添加的头。可用于隐藏服务器信息、添加安全头、优化缓存控制等。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/openresty/headers-more-nginx-module
+./configure --add-module=/path/to/headers-more-nginx-module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>添加任意响应头</li>
+                        <li>修改已有响应头</li>
+                        <li>清除敏感信息头</li>
+                        <li>支持条件判断</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="comment"># 隐藏 Nginx 版本号</span>
+    <span class="directive">more_clear_headers</span> <span class="value">Server</span>;
+    
+    <span class="comment"># 添加安全头</span>
+    <span class="directive">more_set_headers</span> <span class="value">"X-Frame-Options: DENY"</span>;
+    <span class="directive">more_set_headers</span> <span class="value">"X-Content-Type-Options: nosniff"</span>;
+    <span class="directive">more_set_headers</span> <span class="value">"X-XSS-Protection: 1; mode=block"</span>;
+    
+    <span class="comment"># 修改 Content-Type</span>
+    <span class="directive">more_set_headers</span> <span class="value">"Content-Type: text/html; charset=utf-8"</span>;
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>隐藏服务器信息、添加安全响应头、修复安全扫描问题、自定义响应头。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        echo-nginx-module
+                        <span class="plugin-rank">NO.11</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">调试</span>
+                        <span class="plugin-tag">测试</span>
+                    </div>
+                    <p>
+                        <strong>echo</strong> 模块提供类似 shell echo 的命令，
+                        用于在 Nginx 配置中直接输出内容，无需后端服务器。非常适合测试、调试和生成简单响应。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/openresty/echo-nginx-module
+./configure --add-module=/path/to/echo-nginx-module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>直接输出文本内容</li>
+                        <li>支持变量插值</li>
+                        <li>模拟后端响应</li>
+                        <li>调试配置利器</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/hello</span> {
+    <span class="directive">echo</span> <span class="value">"Hello, World!"</span>;
+}
+
+<span class="keyword">location</span> <span class="value">/info</span> {
+    <span class="directive">echo</span> <span class="value">"Request URI: $request_uri"</span>;
+    <span class="directive">echo</span> <span class="value">"Remote Addr: $remote_addr"</span>;
+    <span class="directive">echo</span> <span class="value">"Server Name: $server_name"</span>;
+}
+
+<span class="keyword">location</span> <span class="value">/sleep</span> {
+    <span class="directive">echo_sleep</span> <span class="value">2</span>;
+    <span class="directive">echo</span> <span class="value">"Slept for 2 seconds"</span>;
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>配置测试、模拟接口、健康检查、调试变量、教学演示。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-sticky-module
+                        <span class="plugin-rank">NO.12</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">负载均衡</span>
+                        <span class="plugin-tag">会话保持</span>
+                    </div>
+                    <p>
+                        <strong>nginx-sticky-module</strong> 提供基于 Cookie 的会话保持功能，
+                        确保同一用户的请求始终转发到同一台后端服务器。适用于有状态应用。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/blaettler/nginx-sticky-module
+./configure --add-module=/path/to/nginx-sticky-module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>Cookie 会话保持</li>
+                        <li>自动插入 Cookie</li>
+                        <li>支持哈希算法</li>
+                        <li>配置简单</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">upstream</span> <span class="value">backend</span> {
+    sticky;
+    <span class="comment"># 或自定义 Cookie 名称</span>
+    <span class="comment"># sticky name=route_id expires=1h domain=.example.com;</span>
+    
+    server 192.168.1.1:8080;
+    server 192.168.1.2:8080;
+    server 192.168.1.3:8080;
+}
+
+<span class="keyword">server</span> {
+    <span class="keyword">location</span> <span class="value">/</span> {
+        <span class="directive">proxy_pass</span> <span class="value">http://backend</span>;
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>会话保持、购物车应用、用户登录状态、有状态服务。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        lua-resty-redis
+                        <span class="plugin-rank">NO.13</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 库</span>
+                        <span class="plugin-tag">Redis</span>
+                    </div>
+                    <p>
+                        <strong>lua-resty-redis</strong> 是 OpenResty 的 Redis 客户端库，
+                        提供非阻塞的 Redis 操作，可用于缓存、会话存储、分布式锁等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 luarocks 安装
+luarocks install lua-resty-redis
+
+# 或在 OpenResty 中直接使用
+# 通常已预装</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>非阻塞 Redis 操作</li>
+                        <li>支持所有 Redis 命令</li>
+                        <li>连接池管理</li>
+                        <li>管道支持</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/test</span> {
+    <span class="directive">content_by_lua_block</span> {
+        <span class="keyword">local</span> redis = <span class="keyword">require</span>(<span class="value">"resty.redis"</span>)
+        <span class="keyword">local</span> red = redis:new()
+        
+        red:set_timeout(1000)
+        <span class="keyword">local</span> ok, err = red:connect(<span class="value">"127.0.0.1"</span>, 6379)
+        
+        <span class="keyword">if</span> ok <span class="keyword">then</span>
+            red:set(<span class="value">"name"</span>, <span class="value">"OpenResty"</span>)
+            <span class="keyword">local</span> name, err = red:get(<span class="value">"name"</span>)
+            ngx.say(<span class="value">"Name: "</span>, name)
+        <span class="keyword">end</span>
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>缓存层、会话存储、计数器、分布式锁、消息队列。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-auth-request-module
+                        <span class="plugin-rank">NO.14</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">认证</span>
+                        <span class="plugin-tag">安全</span>
+                    </div>
+                    <p>
+                        <strong>auth_request</strong> 模块实现基于子请求的认证机制，
+                        将认证请求转发到外部服务，根据响应决定是否允许访问。常用于 OAuth、SSO 等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 通常已内置在标准 Nginx 中
+# 如未包含，需编译安装
+./configure --with-http_auth_request_module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>外部认证服务</li>
+                        <li>灵活的认证逻辑</li>
+                        <li>支持 OAuth/OIDC</li>
+                        <li>与任何认证服务集成</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">server</span> {
+    <span class="keyword">location</span> <span class="value">/private/</span> {
+        <span class="directive">auth_request</span> <span class="value">/auth</span>;
+    }
+    
+    <span class="keyword">location</span> <span class="value">= /auth</span> {
+        <span class="directive">internal</span>;
+        <span class="directive">proxy_pass</span> <span class="value">http://auth-server/validate</span>;
+        <span class="directive">proxy_pass_request_body</span> <span class="value">off</span>;
+        <span class="directive">proxy_set_header</span> <span class="value">X-Original-URI $request_uri</span>;
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>OAuth 认证、SSO 单点登录、JWT 验证、统一认证网关。
+                    </div>
+                </div>
+
                 <!-- 模块对比表 -->
                 <h3 style="margin-top: 40px;">📊 模块对比总览</h3>
                 <table class="comparison-table">
@@ -690,6 +976,48 @@ luarocks install lua-resty-http
                             <td>⭐⭐</td>
                             <td>服务间通信</td>
                         </tr>
+                        <tr>
+                            <td><strong>ngx_cache_purge</strong></td>
+                            <td>缓存管理</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>缓存清除</td>
+                        </tr>
+                        <tr>
+                            <td><strong>headers-more</strong></td>
+                            <td>Header 处理</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>响应头管理</td>
+                        </tr>
+                        <tr>
+                            <td><strong>echo</strong></td>
+                            <td>调试工具</td>
+                            <td><span class="stars">★★☆☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>测试调试</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginx-sticky</strong></td>
+                            <td>会话保持</td>
+                            <td><span class="stars">★★☆☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>Cookie 会话保持</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lua-resty-redis</strong></td>
+                            <td>Redis 客户端</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐</td>
+                            <td>缓存/会话存储</td>
+                        </tr>
+                        <tr>
+                            <td><strong>auth_request</strong></td>
+                            <td>认证</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐</td>
+                            <td>OAuth/SSO 认证</td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -705,14 +1033,23 @@ luarocks install lua-resty-http
                         <li>编译安装：<code>make && sudo make install</code></li>
                     </ol>
                 </div>
+
+                <!-- 资源推荐 -->
+                <div class="tip-box" style="background: #e3f2fd; border-left-color: #2196f3;">
+                    <strong style="color: #1565c0;">📚 学习资源推荐：</strong>
+                    <ul style="margin: 15px 0 0 20px; line-height: 2.2; color: #424242;">
+                        <li><strong>OpenResty 官方文档：</strong><code>https://openresty.org/</code></li>
+                        <li><strong>Nginx 模块开发指南：</strong><code>https://www.nginx.com/resources/wiki/extending/</code></li>
+                        <li><strong>lua-resty 库集合：</strong><code>https://github.com/openresty/lua-resty-core</code></li>
+                        <li><strong>Nginx 模块 GitHub 仓库：</strong><code>https://github.com/nginx</code></li>
+                    </ul>
+                </div>
             </div>
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Nginx 深度学习。深入学习 Nginx 内部机制与配置实践。</p>
-        </div>
+    <footer class="footer" style="text-align: center; padding: 20px; color: #666; font-size: 14px; border-top: 1px solid #e0e0e0; margin-top: 40px;">
+        <p>📖 提示：生产环境使用第三方模块前，请充分测试兼容性和稳定性。</p>
     </footer>
 </body>
 </html>
