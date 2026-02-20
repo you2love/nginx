@@ -907,6 +907,336 @@ sudo make install</code>
                     </div>
                 </div>
 
+                <!-- 第六类：创意插件 -->
+                <div class="plugin-category" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                    <h3>🎨 创意插件（特色功能）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ngx_http_sub_module
+                        <span class="plugin-rank">🎯 内容替换</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag official">官方内置</span>
+                        <span class="plugin-tag">内容过滤</span>
+                        <span class="plugin-tag">响应修改</span>
+                    </div>
+                    <p>
+                        <strong>sub_module</strong> 提供响应内容替换功能，类似 sed 的流式编辑器，
+                        可以在响应发送给客户端之前替换其中的内容。用于 A/B 测试、灰度发布、内容定制等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 通常已内置在标准 Nginx 中
+# 如未包含，需编译时启用
+./configure --with-http_sub_module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>流式内容替换</li>
+                        <li>支持正则表达式</li>
+                        <li>多次替换支持</li>
+                        <li>性能开销低</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/</span> {
+    <span class="directive">sub_filter</span> <span class="value">'&lt;body&gt;'</span> <span class="value">'&lt;body&gt;&lt;script src="analytics.js"&gt;&lt;/script&gt;'</span>;
+    <span class="directive">sub_filter_once</span> <span class="value">off</span>;
+    <span class="directive">sub_filter_types</span> <span class="value">text/html</span>;
+    
+    <span class="comment"># A/B 测试：替换不同版本</span>
+    <span class="directive">sub_filter</span> <span class="value">'version-1.0'</span> <span class="value">'version-2.0'</span>;
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>A/B 测试、灰度发布、注入分析脚本、内容本地化、临时修复前端问题。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        lua-resty-lock
+                        <span class="plugin-rank">🔒 分布式锁</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 库</span>
+                        <span class="plugin-tag">并发控制</span>
+                    </div>
+                    <p>
+                        <strong>lua-resty-lock</strong> 提供基于共享内存的分布式锁，
+                        用于在 Nginx worker 进程间协调任务执行，避免并发问题。适合缓存重建、定时任务等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 luarocks 安装
+luarocks install lua-resty-lock
+
+# 或在 OpenResty 中直接使用
+# 通常已预装</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>worker 进程间锁</li>
+                        <li>超时自动释放</li>
+                        <li>等待超时支持</li>
+                        <li>轻量级实现</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/update</span> {
+    <span class="directive">content_by_lua_block</span> {
+        <span class="keyword">local</span> lock = <span class="keyword">require</span>(<span class="value">"resty.lock"</span>)
+        <span class="keyword">local</span> mylock, err = lock:new()
+        
+        <span class="keyword">local</span> ok, err = mylock:lock(<span class="value">"my_key"</span>, {timeout=5})
+        <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span>
+            ngx.say(<span class="value">"failed to lock: "</span>, err)
+            <span class="keyword">return</span>
+        <span class="keyword">end</span>
+        
+        <span class="comment"># 执行临界区代码</span>
+        ngx.say(<span class="value">"doing critical section"</span>)
+        
+        mylock:unlock()
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>缓存穿透保护、定时任务防重、并发请求合并、资源访问控制。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-sflow-module
+                        <span class="plugin-rank">📊 流量监控</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">流量分析</span>
+                        <span class="plugin-tag">实时监控</span>
+                    </div>
+                    <p>
+                        <strong>sFlow</strong> 模块提供网络流量采样和导出功能，
+                        将流量数据发送到 sFlow 收集器进行实时分析。适合大规模流量监控和网络分析。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/sflow/nginx-sflow-module
+./configure --add-module=/path/to/nginx-sflow-module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>实时流量采样</li>
+                        <li>低性能开销</li>
+                        <li>标准 sFlow 协议</li>
+                        <li>支持多种收集器</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">sflow</span> <span class="value">on</span>;
+    <span class="directive">sflow_sampling</span> <span class="value">100</span>;
+    <span class="directive">sflow_collector</span> <span class="value">192.168.1.100:6343</span>;
+    <span class="directive">sflow_agent</span> <span class="value">eth0</span>;
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>大规模流量监控、DDoS 检测、网络性能分析、容量规划。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        lua-resty-upload
+                        <span class="plugin-rank">📤 文件上传</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 库</span>
+                        <span class="plugin-tag">流式处理</span>
+                    </div>
+                    <p>
+                        <strong>lua-resty-upload</strong> 提供流式文件上传处理，
+                        支持大文件分块上传，无需将整个文件加载到内存。适合文件服务器、图片上传等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 luarocks 安装
+luarocks install lua-resty-upload
+
+# 需要 lua-resty-core 支持</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>流式上传处理</li>
+                        <li>支持大文件</li>
+                        <li>内存占用低</li>
+                        <li>multipart 解析</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/upload</span> {
+    <span class="directive">content_by_lua_block</span> {
+        <span class="keyword">local</span> upload = <span class="keyword">require</span>(<span class="value">"resty.upload"</span>)
+        <span class="keyword">local</span> form, err = upload:new(8192)
+        
+        <span class="keyword">while</span> <span class="keyword">true</span> <span class="keyword">do</span>
+            <span class="keyword">local</span> type, res, err = form:read()
+            <span class="keyword">if</span> type == <span class="value">"eof"</span> <span class="keyword">then</span>
+                <span class="keyword">break</span>
+            <span class="keyword">end</span>
+            <span class="comment"># 处理上传数据</span>
+        <span class="keyword">end</span>
+        
+        ngx.say(<span class="value">"upload complete"</span>)
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>大文件上传、图片视频上传、分片上传、文件处理流水线。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-module-vts
+                        <span class="plugin-rank">📈 虚拟主机统计</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">流量统计</span>
+                        <span class="plugin-tag">监控</span>
+                    </div>
+                    <p>
+                        <strong>VTS (Virtual Host Traffic Status)</strong> 模块提供详细的虚拟主机流量统计，
+                        包括请求数、流量、响应时间等指标，并支持 JSON 格式导出。是 Nginx 原生的流量监控方案。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/vozlt/nginx-module-vts
+./configure --add-module=/path/to/nginx-module-vts
+make
+sudo make install
+
+# 需要添加状态页面
+status_format json;</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>虚拟主机级别统计</li>
+                        <li>JSON 格式导出</li>
+                        <li>实时流量数据</li>
+                        <li>低性能开销</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">vhost_traffic_status_zone</span>;
+    
+    <span class="keyword">server</span> {
+        <span class="keyword">location</span> <span class="value">/status</span> {
+            <span class="directive">vhost_traffic_status_display</span>;
+            <span class="directive">vhost_traffic_status_format</span> <span class="value">json</span>;
+        }
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>多租户流量统计、按域名监控、计费依据、流量分析。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        lua-resty-dns
+                        <span class="plugin-rank">🌐 DNS 解析</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 库</span>
+                        <span class="plugin-tag">服务发现</span>
+                    </div>
+                    <p>
+                        <strong>lua-resty-dns</strong> 提供异步 DNS 客户端，
+                        支持 A、AAAA、CNAME、MX、SRV 等多种记录类型查询。适合动态服务发现、DNS 负载均衡等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 luarocks 安装
+luarocks install lua-resty-dns
+
+# 或在 OpenResty 中直接使用</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>异步 DNS 查询</li>
+                        <li>支持多种记录类型</li>
+                        <li>DNS 缓存支持</li>
+                        <li>错误处理完善</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/dns</span> {
+    <span class="directive">content_by_lua_block</span> {
+        <span class="keyword">local</span> resolver = <span class="keyword">require</span>(<span class="value">"resty.dns.resolver"</span>)
+        <span class="keyword">local</span> r, err = resolver:new{
+            nameservers = {<span class="value">"8.8.8.8"</span>, <span class="value">"8.8.4.4"</span>}
+        }
+        
+        <span class="keyword">local</span> answers, err = r:query(<span class="value">"example.com"</span>)
+        <span class="keyword">for</span> i, ans <span class="keyword">in</span> <span class="keyword">pairs</span>(answers) <span class="keyword">do</span>
+            ngx.say(ans.name, <span class="value">" "</span>, ans.address)
+        <span class="keyword">end</span>
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>动态服务发现、DNS 负载均衡、服务注册发现、微服务架构。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-allow-deny-from-args
+                        <span class="plugin-rank">🔐 动态访问控制</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">访问控制</span>
+                        <span class="plugin-tag">动态规则</span>
+                    </div>
+                    <p>
+                        <strong>allow-deny-from-args</strong> 允许根据请求参数动态决定访问控制规则，
+                        实现更灵活的权限管理。适合 API 网关、多租户系统等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 Lua 实现
+# 通过 ngx_lua 模块动态判断
+location /api {
+    access_by_lua_block {
+        local token = ngx.var.arg_token
+        if not validate_token(token) then
+            ngx.exit(403)
+        end
+    }
+}</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>动态访问控制</li>
+                        <li>基于参数判断</li>
+                        <li>灵活权限管理</li>
+                        <li>支持 Token 验证</li>
+                    </ul>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>API 访问控制、多租户隔离、动态权限、临时访问授权。
+                    </div>
+                </div>
+
                 <!-- 模块对比表 -->
                 <h3 style="margin-top: 40px;">📊 模块对比总览</h3>
                 <table class="comparison-table">
@@ -1018,6 +1348,48 @@ sudo make install</code>
                             <td>⭐⭐</td>
                             <td>OAuth/SSO 认证</td>
                         </tr>
+                        <tr>
+                            <td><strong>ngx_http_sub_module</strong></td>
+                            <td>内容替换</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐</td>
+                            <td>A/B 测试、灰度发布</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lua-resty-lock</strong></td>
+                            <td>分布式锁</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐</td>
+                            <td>并发控制、缓存重建</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginx-module-vts</strong></td>
+                            <td>流量统计</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>虚拟主机监控</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lua-resty-dns</strong></td>
+                            <td>DNS 解析</td>
+                            <td><span class="stars">★★☆☆☆</span></td>
+                            <td>⭐⭐</td>
+                            <td>服务发现、DNS 负载均衡</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lua-resty-upload</strong></td>
+                            <td>文件上传</td>
+                            <td><span class="stars">★★☆☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>大文件流式上传</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginx-sflow-module</strong></td>
+                            <td>流量监控</td>
+                            <td><span class="stars">★★☆☆☆</span></td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>大规模流量分析</td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -1042,6 +1414,19 @@ sudo make install</code>
                         <li><strong>Nginx 模块开发指南：</strong><code>https://www.nginx.com/resources/wiki/extending/</code></li>
                         <li><strong>lua-resty 库集合：</strong><code>https://github.com/openresty/lua-resty-core</code></li>
                         <li><strong>Nginx 模块 GitHub 仓库：</strong><code>https://github.com/nginx</code></li>
+                        <li><strong>OpenResty Lua 库：</strong><code>https://github.com/openresty/lua-resty-*</code></li>
+                    </ul>
+                </div>
+
+                <!-- 创意插件使用建议 -->
+                <div class="tip-box" style="background: #fce4ec; border-left-color: #e91e63; margin-top: 30px;">
+                    <strong style="color: #c2185b;">🎨 创意插件使用建议：</strong>
+                    <ul style="margin: 15px 0 0 20px; line-height: 2.2; color: #424242;">
+                        <li><strong>A/B 测试：</strong>使用 <code>sub_module</code> 替换页面内容，快速测试不同版本</li>
+                        <li><strong>缓存保护：</strong>使用 <code>lua-resty-lock</code> 防止缓存穿透和并发重建</li>
+                        <li><strong>多租户监控：</strong>使用 <code>nginx-module-vts</code> 统计每个域名的流量</li>
+                        <li><strong>微服务架构：</strong>使用 <code>lua-resty-dns</code> 实现动态服务发现</li>
+                        <li><strong>文件服务：</strong>使用 <code>lua-resty-upload</code> 处理大文件上传</li>
                     </ul>
                 </div>
             </div>
@@ -1050,6 +1435,7 @@ sudo make install</code>
 
     <footer class="footer" style="text-align: center; padding: 20px; color: #666; font-size: 14px; border-top: 1px solid #e0e0e0; margin-top: 40px;">
         <p>📖 提示：生产环境使用第三方模块前，请充分测试兼容性和稳定性。</p>
+        <p style="margin-top: 8px;">🎨 创意插件可以扩展 Nginx 功能，但请根据实际需求谨慎选择。</p>
     </footer>
 </body>
 </html>
