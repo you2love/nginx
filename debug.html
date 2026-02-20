@@ -270,9 +270,14 @@
             padding: 20px;
             border-radius: var(--radius);
             margin: 20px 0;
+            overflow-x: auto;
+        }
+        .command-flow pre {
+            margin: 0;
             font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
             font-size: 13px;
             line-height: 1.8;
+            white-space: pre;
         }
         .command-flow .comment {
             color: #6b7280;
@@ -774,7 +779,7 @@
 
                 <h3 class="section-subtitle">调试命令速查表</h3>
                 <div class="command-flow">
-<span class="comment"># ===== 服务管理 =====</span>
+<pre><span class="comment"># ===== 服务管理 =====</span>
 <span class="cmd">systemctl status nginx</span>    <span class="comment"># 查看服务状态</span>
 <span class="cmd">systemctl restart nginx</span>   <span class="comment"># 重启服务</span>
 <span class="cmd">systemctl reload nginx</span>    <span class="comment"># 重载配置（不中断）</span>
@@ -797,7 +802,7 @@
 
 <span class="comment"># ===== 网络测试 =====</span>
 <span class="cmd">curl -v http://localhost/</span>           <span class="comment"># 详细请求测试</span>
-<span class="cmd">ab -n 1000 -c 100 http://localhost/</span> <span class="comment"># 压力测试</span>
+<span class="cmd">ab -n 1000 -c 100 http://localhost/</span> <span class="comment"># 压力测试</span></pre>
                 </div>
             </div>
         </section>
