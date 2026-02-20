@@ -576,8 +576,11 @@
                 </table>
             </div>
         </section>
+    </main>
 
     <script src="/tmp/scripts.js"></script>
+</body>
+</html>
         <section class="section bg-light">
             <div class="container">
                 <h2 class="section-title">指令常用参数值</h2>
@@ -701,6 +704,272 @@
                         <tr><td><code>ssl_ciphers HIGH:!aNULL:!MD5</code></td><td>加密套件列表</td></tr>
                         <tr><td><code>ssl_stapling on</code></td><td>启用OCSP装订</td></tr>
                         <tr><td><code>ssl_stapling_verify on</code></td><td>验证OCSP响应</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">Rewrite模块相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>break</code></td><td>-</td><td>server, location, if</td><td>停止处理当前location的rewrite规则</td></tr>
+                        <tr><td><code>return</code></td><td>-</td><td>server, location, if</td><td>返回特定状态码和URL</td></tr>
+                        <tr><td><code>rewrite_log</code></td><td>off</td><td>http, server, location</td><td>记录rewrite规则到错误日志</td></tr>
+                        <tr><td><code>uninitialized_variable_warn</code></td><td>on</td><td>http, server, location</td><td>记录未初始化变量警告</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">HTTP相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>add_header</code></td><td>-</td><td>http, server, location</td><td>添加自定义响应头</td></tr>
+                        <tr><td><code>access_log</code></td><td>logs/access.log combined</td><td>http, server, location</td><td>访问日志路径和格式</td></tr>
+                        <tr><td><code>log_format</code></td><td>combined</td><td>http</td><td>自定义日志格式</td></tr>
+                        <tr><td><code>open_log_file_cache</code></td><td>off</td><td>http, server, location</td><td>日志文件缓存</td></tr>
+                        <tr><td><code>msie_padding</code></td><td>off</td><td>http, server, location</td><td>IE浏览器响应填充</td></tr>
+                        <tr><td><code>ignore_invalid_headers</code></td><td>off</td><td>http, server</td><td>忽略无效的请求头</td></tr>
+                        <tr><td><code>merge_slashes</code></td><td>on</td><td>http, server</td><td>合并多个斜杠</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">条件指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>if</code></td><td>-</td><td>server, location</td><td>条件判断语句</td></tr>
+                        <tr><td><code>set</code></td><td>-</td><td>server, location, if</td><td>设置变量值</td></tr>
+                        <tr><td><code>map</code></td><td>-</td><td>http</td><td>创建变量映射</td></tr>
+                        <tr><td><code>geo</code></td><td>-</td><td>http</td><td>基于IP创建变量</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">try_files指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>try_files</code></td><td>-</td><td>server, location</td><td>按顺序尝试文件，最后一个可以是URI</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">安全相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>valid_referers</code></td><td>none</td><td>server, location</td><td>设置有效的来源URL</td></tr>
+                        <tr><td><code>auth_basic</code></td><td>off</td><td>http, server, location</td><td>启用基本认证</td></tr>
+                        <tr><td><code>auth_basic_user_file</code></td><td>-</td><td>http, server, location</td><td>认证用户文件路径</td></tr>
+                        <tr><td><code>auth_request</code></td><td>-</td><td>http, server, location</td><td>通过子请求进行认证</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">FastCGI相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>fastcgi_pass</code></td><td>-</td><td>location</td><td>FastCGI服务器地址</td></tr>
+                        <tr><td><code>fastcgi_index</code></td><td>-</td><td>http, server, location</td><td>FastCGI默认首页</td></tr>
+                        <tr><td><code>fastcgi_param</code></td><td>-</td><td>http, server, location</td><td>设置FastCGI参数</td></tr>
+                        <tr><td><code>fastcgi_split_path_info</code></td><td>^(.+?.php)(/.*)$</td><td>location</td><td>分割SCRIPT_FILENAME和PATH_INFO</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">日志格式相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>log_format</code></td><td>combined</td><td>http</td><td>定义自定义日志格式</td></tr>
+                        <tr><td><code>log_not_found</code></td><td>on</td><td>http, server, location</td><td>记录未找到文件的日志</td></tr>
+                        <tr><td><code>log_subrequest</code></td><td>off</td><td>http, server, location</td><td>记录子请求日志</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">RealIP模块相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>set_real_ip_from</code></td><td>-</td><td>http, server, location</td><td>信任的代理IP地址</td></tr>
+                        <tr><td><code>real_ip_header</code></td><td>X-Real-IP</td><td>http, server, location</td><td>获取真实IP的请求头</td></tr>
+                        <tr><td><code>real_ip_recursive</code></td><td>off</td><td>http, server, location</td><td>是否递归获取真实IP</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">Stream模块相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>stream</code></td><td>-</td><td>main</td><td>stream配置块</td></tr>
+                        <tr><td><code>listen</code></td><td>-</td><td>stream, server</td><td>监听端口和地址</td></tr>
+                        <tr><td><code>server</code></td><td>-</td><td>stream</td><td>定义stream服务器</td></tr>
+                        <tr><td><code>proxy_pass</code></td><td>-</td><td>stream, server</td><td>代理后端服务器</td></tr>
+                        <tr><td><code>proxy_connect_timeout</code></td><td>60s</td><td>stream, server</td><td>连接超时时间</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">Gzip压缩相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>gzip</code></td><td>off</td><td>http, server, location</td><td>启用gzip压缩</td></tr>
+                        <tr><td><code>gzip_comp_level</code></td><td>1</td><td>http, server, location</td><td>压缩级别(1-9)</td></tr>
+                        <tr><td><code>gzip_min_length</code></td><td>20</td><td>http, server, location</td><td>最小压缩文件大小</td></tr>
+                        <tr><td><code>gzip_buffers</code></td><td>4 8k</td><td>http, server, location</td><td>压缩缓冲区大小</td></tr>
+                        <tr><td><code>gzip_types</code></td><td>text/html</td><td>http, server, location</td><td>压缩的文件类型</td></tr>
+                        <tr><td><code>gzip_proxied</code></td><td>off</td><td>http, server, location</td><td>对代理响应压缩</td></tr>
+                        <tr><td><code>gzip_disable</code></td><td>msie6</td><td>http, server, location</td><td>禁用特定浏览器压缩</td></tr>
+                        <tr><td><code>gzip_vary</code></td><td>off</td><td>http, server, location</td><td>添加Vary响应头</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">路径别名和文件系统指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>alias</code></td><td>-</td><td>location</td><td>设置路径别名</td></tr>
+                        <tr><td><code>root</code></td><td>html</td><td>http, server, location</td><td>网站根目录</td></tr>
+                        <tr><td><code>index</code></td><td>index.html</td><td>http, server, location</td><td>默认首页文件</td></tr>
+                        <tr><td><code>autoindex</code></td><td>off</td><td>http, server, location</td><td>启用目录列表</td></tr>
+                        <tr><td><code>autoindex_exact_size</code></td><td>on</td><td>http, server, location</td><td>显示精确文件大小</td></tr>
+                        <tr><td><code>autoindex_localtime</code></td><td>off</td><td>http, server, location</td><td>显示本地时间</td></tr>
+                        <tr><td><code>try_files</code></td><td>-</td><td>server, location</td><td>按顺序尝试文件</td></tr>
+                        <tr><td><code>charset</code></td><td>-</td><td>http, server, location</td><td>设置字符集</td></tr>
+                        <tr><td><code>charset_types</code></td><td>text/html</td><td>http, server, location</td><td>应用字符集的MIME类型</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">安全和防护指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>server_tokens</code></td><td>on</td><td>http, server</td><td>显示nginx版本信息</td></tr>
+                        <tr><td><code>server_signature</code></td><td>on</td><td>http, server</td><td>在错误页面显示nginx版本</td></tr>
+                        <tr><td><code>limit_rate</code></td><td>0</td><td>http, server, location</td><td>限制响应速率</td></tr>
+                        <tr><td><code>limit_except</code></td><td>-</td><td>location</td><td>限制HTTP方法</td></tr>
+                        <tr><td><code>max_ranges</code></td><td>0</td><td>http, server, location</td><td>限制Range请求数量</td></tr>
+                        <tr><td><code>reset_timedout_connection</code></td><td>off</td><td>http, server, location</td><td>重置超时连接</td></tr>
+                        <tr><td><code>msie_padding</code></td><td>off</td><td>http, server, location</td><td>IE浏览器响应填充</td></tr>
+                        <tr><td><code>add_header</code></td><td>-</td><td>http, server, location</td><td>添加自定义响应头</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">连接和超时配置指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server, location</td><td>长连接超时时间</td></tr>
+                        <tr><td><code>keepalive_requests</code></td><td>100</td><td>http, server, location</td><td>单个连接最大请求数</td></tr>
+                        <tr><td><code>client_body_timeout</code></td><td>60s</td><td>http, server, location</td><td>客户端发送请求体超时</td></tr>
+                        <tr><td><code>client_header_timeout</code></td><td>60s</td><td>http, server, location</td><td>客户端发送请求头超时</td></tr>
+                        <tr><td><code>send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送响应超时</td></tr>
+                        <tr><td><code>lingering_time</code></td><td>30s</td><td>http, server, location</td><td>lingering等待时间</td></tr>
+                        <tr><td><code>lingering_timeout</code></td><td>5s</td><td>http, server, location</td><td>lingering读取超时</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">指令使用频率分类</h3>
+                <p class="page-intro">按照使用频率将指令分为三大类：高频（日常配置必需）、中频（常用优化和功能）、低频（特殊场景和调试）</p>
+
+                <h3 class="section-subtitle">高频使用指令（日常配置必需）</h3>
+
+                <h4 class="section-subtitle">服务器和监听配置</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>server</code></td><td>-</td><td>http</td><td>定义虚拟服务器</td></tr>
+                        <tr><td><code>listen</code></td><td>80</td><td>server</td><td>监听端口和地址</td></tr>
+                        <tr><td><code>server_name</code></td><td>""</td><td>server</td><td>虚拟主机名</td></tr>
+                        <tr><td><code>root</code></td><td>html</td><td>http, server, location</td><td>网站根目录</td></tr>
+                        <tr><td><code>index</code></td><td>index.html</td><td>http, server, location</td><td>默认首页文件</td></tr>
+                        <tr><td><code>location</code></td><td>-</td><td>server, location</td><td>匹配请求URI</td></tr>
+                        <tr><td><code>alias</code></td><td>-</td><td>location</td><td>设置路径别名</td></tr>
+                    </tbody>
+                </table>
+
+                <h4 class="section-subtitle">代理和反向代理</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_pass</code></td><td>-</td><td>location, if in location</td><td>代理服务器地址</td></tr>
+                        <tr><td><code>proxy_set_header</code></td><td>-</td><td>http, server, location</td><td>设置代理请求头</td></tr>
+                        <tr><td><code>fastcgi_pass</code></td><td>-</td><td>location</td><td>FastCGI服务器地址</td></tr>
+                        <tr><td><code>fastcgi_param</code></td><td>-</td><td>http, server, location</td><td>设置FastCGI参数</td></tr>
+                        <tr><td><code>upstream</code></td><td>-</td><td>http</td><td>定义后端服务器组</td></tr>
+                        <tr><td><code>server</code></td><td>-</td><td>upstream</td><td>定义后端服务器</td></tr>
+                    </tbody>
+
+                <h4 class="section-subtitle">重定向和URL处理</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>rewrite</code></td><td>-</td><td>server, location</td><td>URL重写</td></tr>
+                        <tr><td><code>return</code></td><td>-</td><td>server, location, if</td><td>返回特定状态码和URL</td></tr>
+                        <tr><td><code>try_files</code></td><td>-</td><td>server, location</td><td>按顺序尝试文件</td></tr>
+                        <tr><td><code>redirect</code></td><td>-</td><td>location</td><td>302临时重定向</td></tr>
+                        <tr><td><code>permanent</code></td><td>-</td><td>location</td><td>301永久重定向</td></tr>
+                        <tr><td><code>error_page</code></td><td>-</td><td>http, server, location</td><td>自定义错误页面</td></tr>
+                    </tbody>
+
+                <h4 class="section-subtitle">日志配置</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>access_log</code></td><td>logs/access.log combined</td><td>http, server, location</td><td>访问日志路径和格式</td></tr>
+                        <tr><td><code>log_format</code></td><td>combined</td><td>http</td><td>自定义日志格式</td></tr>
+                        <tr><td><code>error_log</code></td><td>logs/error.log error</td><td>main, http, server, location</td><td>错误日志路径和级别</td></tr>
+                        <tr><td><code>log_level</code></td><td>error</td><td>main, http, server, location</td><td>日志级别</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">中频使用指令（常用优化和功能）</h3>
+
+                <h4 class="section-subtitle">性能优化</h4>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>gzip</code></td><td>off</td><td>http, server, location</td><td>启用gzip压缩</td></tr>
+                        <tr><td><code>gzip_comp_level</code></td><td>1</td><td>http, server, location</td><td>压缩级别(1-9)</td></tr>
+                        <tr><td><code>sendfile</code></td><td>on</td><td>http, server, location</td><td>启用零拷贝传输</td></tr>
+                        <tr><td><code>tcp_nopush</code></td><td>on</td><td>http, server, location</td><td>优化TCP包发送</td></tr>
+                        <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server, location</td><td>长连接超时</td></tr>
+                        <tr><td><code>keepalive_requests</code></td><td>100</td><td>http, server, location</td><td>单个连接最大请求数</td></tr>
+                    </tbody>
+                </table>
+        </section>
     </main>
 
                 <h3 class="section-subtitle">2018-2024年新增指令（演进特性）</h3>
