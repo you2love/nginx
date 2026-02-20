@@ -106,6 +106,114 @@
                 </table>
             </div>
         </section>
+
+        <section class="section">
+            <div class="container">
+                <h3 class="section-subtitle">SSL/TLS指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>ssl</code></td><td>off</td><td>http, server</td><td>启用SSL</td></tr>
+                        <tr><td><code>ssl_certificate</code><td>-</td><td>http, server</td><td>证书文件路径</td></tr>
+                        <tr><td><code>ssl_certificate_key</code><td>-</td><td>http, server</td><td>私钥文件路径</td></tr>
+                        <tr><td><code>ssl_protocols</code><td>TLSv1 TLSv1.1 TLSv1.2 TLSv1.3</td><td>http, server</td><td>支持的SSL协议</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">访问控制指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>allow</code></td><td>-</td><td>http, server, location</td><td>允许访问的IP</td></tr>
+                        <tr><td><code>deny</code></td><td>-</td><td>http, server, location</td><td>拒绝访问的IP</td></tr>
+                        <tr><td><code>auth_basic</code></td><td>off</td><td>http, server, location</td><td>启用基本认证</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">性能优化指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>sendfile</code></td><td>on</td><td>http, server, location</td><td>启用零拷贝传输</td></tr>
+                        <tr><td><code>tcp_nopush</code></td><td>on</td><td>http, server, location</td><td>优化TCP包发送</td></tr>
+                        <tr><td><code>gzip</code></td><td>off</td><td>http, server, location</td><td>启用gzip压缩</td></tr>
+                        <tr><td><code>gzip_comp_level</code></td><td>1</td><td>http, server, location</td><td>压缩级别(1-9)</td></tr>
+                        <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server, location</td><td>长连接超时</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
+        <section class="section bg-light">
+            <div class="container">
+                <h2 class="section-title">指令常用参数值</h2>
+                
+                <h3 class="section-subtitle">worker_processes 参数值</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>值</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>1</code></td><td>默认值，单进程模式</td></tr>
+                        <tr><td><code>auto</code></td><td>自动检测CPU核心数</td></tr>
+                        <tr><td><code>2, 4, 8...</code></td><td>指定进程数量</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">error_log 级别值</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>级别</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>debug</code></td><td>调试信息</td></tr>
+                        <tr><td><code>info</code></td><td>信息消息</td></tr>
+                        <tr><td><code>notice</code></td><td>通知消息</td></tr>
+                        <tr><td><code>warn</code></td><td>警告消息</td></tr>
+                        <tr><td><code>error</code></td><td>错误消息（默认）</td></tr>
+                        <tr><td><code>crit</code></td><td>严重错误</td></tr>
+                        <tr><td><code>alert</code></td><td>警报</td></tr>
+                        <tr><td><code>emerg</code></td><td>紧急情况</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">location 匹配优先级</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>优先级</th><th>匹配规则</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td><code>= /path</code></td><td>精确匹配，优先级最高</td></tr>
+                        <tr><td>2</td><td><code>^~ /path</code></td><td>前缀匹配，停止正则搜索</td></tr>
+                        <tr><td>3</td><td><code>~ pattern</code></td><td>正则匹配（区分大小写）</td></tr>
+                        <tr><td>4</td><td><code>~* pattern</code></td><td>正则匹配（不区分大小写）</td></tr>
+                        <tr><td>5</td><td><code>/path</code></td><td>前缀匹配，优先级最低</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">proxy_set_header 常用值</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>参数</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>Host $host</code></td><td>传递原始Host头</td></tr>
+                        <tr><td><code>X-Real-IP $remote_addr</code></td><td>传递客户端真实IP</td></tr>
+                        <tr><td><code>X-Forwarded-For $proxy_add_x_forwarded_for</code></td><td>传递代理链路</td></tr>
+                        <tr><td><code>X-Forwarded-Proto $scheme</code></td><td>传递原始协议</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
 </body>
