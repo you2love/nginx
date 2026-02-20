@@ -5,6 +5,205 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nginx 内部机制 - 架构与设计</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .flow-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .flow-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .flow-box {
+            background: white;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .flow-box.master {
+            background: #e8f5e9;
+            border-color: #2e7d32;
+        }
+        .flow-box.worker {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+        .flow-box.module {
+            background: #fff3e0;
+            border-color: #f57c00;
+        }
+        .flow-arrow {
+            color: #666;
+            font-size: 24px;
+        }
+        .architecture-diagram {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .architecture-diagram pre {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.8;
+            font-family: 'Courier New', monospace;
+        }
+        .phase-detail {
+            background: white;
+            border-left: 4px solid #007acc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .phase-detail h4 {
+            color: #007acc;
+            margin-top: 0;
+        }
+        .note-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .info-table th, .info-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .info-table code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .highlight-box pre {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .highlight-box code {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .module-tree {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .module-tree pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .sequence-diagram {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .sequence-diagram pre {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .memory-layout {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+            border-left: 2px solid #007acc;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #007acc;
+        }
+        .timeline-item h4 {
+            margin: 0 0 5px 0;
+            color: #007acc;
+        }
+        .timeline-item p {
+            margin: 0;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -27,53 +226,902 @@
         <section class="section">
             <div class="container">
                 <h1 class="page-title">Nginx 内部机制</h1>
-                <p class="page-intro">深入理解Nginx的架构设计、模块系统和事件驱动模型</p>
+                <p class="page-intro">深入理解 Nginx 的架构设计、模块系统和事件驱动模型</p>
             </div>
         </section>
 
-        <section class="section bg-light">
+        <section class="section">
             <div class="container">
-                <h2 class="section-title">Master-Worker 架构</h2>
-                <div class="chart-container">
-                    <h3 class="chart-title">架构示意图</h3>
-                    <div class="flowchart-container">
-                        <svg width="600" height="400" viewBox="0 0 600 400">
-                            <rect x="225" y="20" width="150" height="50" fill="#009639" rx="5"/>
-                            <text x="300" y="50" text-anchor="middle" fill="white" font-weight="bold">Master Process</text>
-                            <text x="300" y="70" text-anchor="middle" fill="white" font-size="12">主进程</text>
-                            <line x1="300" y1="70" x2="150" y2="120" stroke="#009639" stroke-width="2"/>
-                            <line x1="300" y1="70" x2="300" y2="120" stroke="#009639" stroke-width="2"/>
-                            <line x1="300" y1="70" x2="450" y2="120" stroke="#009639" stroke-width="2"/>
-                            <rect x="75" y="130" width="150" height="50" fill="#0067c0" rx="5"/>
-                            <text x="150" y="160" text-anchor="middle" fill="white" font-weight="bold">Worker 1</text>
-                            <rect x="225" y="130" width="150" height="50" fill="#0067c0" rx="5"/>
-                            <text x="300" y="160" text-anchor="middle" fill="white" font-weight="bold">Worker 2</text>
-                            <rect x="375" y="130" width="150" height="50" fill="#0067c0" rx="5"/>
-                            <text x="450" y="160" text-anchor="middle" fill="white" font-weight="bold">Worker 3</text>
-                            <rect x="100" y="250" width="100" height="30" fill="#5cb85c" rx="3"/>
-                            <text x="150" y="270" text-anchor="middle" fill="white" font-size="11">Event Loop</text>
-                            <rect x="250" y="250" width="100" height="30" fill="#5cb85c" rx="3"/>
-                            <text x="300" y="270" text-anchor="middle" fill="white" font-size="11">Event Loop</text>
-                            <rect x="400" y="250" width="100" height="30" fill="#5cb85c" rx="3"/>
-                            <text x="450" y="270" text-anchor="middle" fill="white" font-size="11">Event Loop</text>
-                        </svg>
-                    </div>
-                </div>
+                <h2 class="section-title">🏗️ Master-Worker 架构</h2>
                 
-                <h3 class="section-subtitle">架构特点</h3>
+                <div class="architecture-diagram">
+                    <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                         Master Process                          │
+│                        (主进程 - 管理员)                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │ 读取配置    │  │ 管理 Worker │  │ 平滑重启    │             │
+│  │ 验证配置    │  │ 进程状态    │  │ 热升级      │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+              ▼               ▼               ▼
+┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│   Worker Process │ │   Worker Process │ │   Worker Process │
+│      (工作进程)   │ │      (工作进程)   │ │      (工作进程)   │
+│  ┌────────────┐  │ │  ┌────────────┐  │ │  ┌────────────┐  │
+│  │ Event Loop │  │ │  │ Event Loop │  │ │  │ Event Loop │  │
+│  │ 事件循环    │  │ │  │ 事件循环    │  │ │  │ 事件循环    │  │
+│  └─────┬──────┘  │ │  └─────┬──────┘  │ │  └─────┬──────┘  │
+│        │         │ │        │         │ │        │         │
+│  ┌─────▼──────┐  │ │  ┌─────▼──────┐  │ │  ┌─────▼──────┐  │
+│  │ 处理连接   │  │ │  │ 处理连接   │  │ │  │ 处理连接   │  │
+│  │ 处理请求   │  │ │  │ 处理请求   │  │ │  │ 处理请求   │  │
+│  └────────────┘  │ │  └────────────┘  │ │  └────────────┘  │
+└──────────────────┘ └──────────────────┘ └──────────────────┘
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+         ┌────────┐    ┌────────┐    ┌────────┐
+         │ 客户端 │    │ 后端   │    │ 文件系统│
+         │ Clients│    │ Server │    │ Files  │
+         └────────┘    └────────┘    └────────┘
+                    </pre>
+                </div>
+
+                <div class="note-box">
+                    <strong>💡 架构特点：</strong>
+                    <ul>
+                        <li><strong>Master 进程</strong> - 不处理客户端请求，只负责管理职责</li>
+                        <li><strong>Worker 进程</strong> - 对等关系，独立处理请求，无共享状态</li>
+                        <li><strong>事件驱动</strong> - 每个 Worker 使用异步非阻塞 I/O</li>
+                        <li><strong>无锁设计</strong> - 进程间无需锁，减少上下文切换</li>
+                    </ul>
+                </div>
+
+                <h3 class="section-subtitle">Master 进程职责</h3>
                 <table class="info-table">
                     <thead>
-                        <tr><th>组件</th><th>职责</th><th>特点</th></tr>
+                        <tr><th>职责</th><th>说明</th><th>触发条件</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><strong>Master 进程</strong></td><td>读取配置、管理 Worker 进程</td><td>不处理请求</td></tr>
-                        <tr><td><strong>Worker 进程</strong></td><td>处理客户端连接、执行业务逻辑</td><td>独立运行</td></tr>
-                        <tr><td><strong>Event Loop</strong></td><td>监听事件、处理 I/O 操作</td><td>异步非阻塞</td></tr>
+                        <tr><td>读取和验证配置</td><td>读取 nginx.conf 并验证语法</td><td>启动/重载配置</td></tr>
+                        <tr><td>绑定端口</td><td>创建监听套接字</td><td>启动/热升级</td></tr>
+                        <tr><td>管理 Worker</td><td>启动、停止、重启 Worker 进程</td><td>启动/配置变更</td></tr>
+                        <tr><td>平滑重启</td><td>发送信号重新加载配置</td><td>HUP 信号</td></tr>
+                        <tr><td>热升级</td><td>不中断服务升级 Nginx 二进制</td><td>USR2 信号</td></tr>
+                        <tr><td>日志轮转</td><td>重新打开日志文件</td><td>USR1 信号</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">Worker 进程职责</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>职责</th><th>说明</th><th>特点</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>处理连接</td><td>接受并处理客户端连接</td><td>异步非阻塞</td></tr>
+                        <tr><td>执行模块逻辑</td><td>运行 HTTP、Stream 等模块代码</td><td>按配置执行</td></tr>
+                        <tr><td>I/O 操作</td><td>读写网络、文件系统</td><td>事件驱动</td></tr>
+                        <tr><td>缓存管理</td><td>管理代理缓存、FastCGI 缓存</td><td>进程内缓存</td></tr>
+                        <tr><td>日志记录</td><td>写入访问日志和错误日志</td><td>缓冲写入</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🔄 事件驱动模型</h2>
+                
+                <div class="flow-container">
+                    <div class="flow-diagram">
+                        <div class="flow-box worker">
+                            <strong>Worker 进程</strong>
+                            <br><small>启动</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box module">
+                            <strong>初始化</strong>
+                            <br><small>创建连接池</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box module">
+                            <strong>注册事件</strong>
+                            <br><small>监听套接字</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box worker">
+                            <strong>事件循环</strong>
+                            <br><small>Event Loop</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-diagram">
+                    <pre>
+┌─────────┐     ┌──────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│  Client │     │ epoll    │     │ Worker  │     │ Backend │     │  File   │
+│         │     │ (内核)   │     │         │     │ Server  │     │ System  │
+└────┬────┘     └────┬─────┘     └────┬────┘     └────┬────┘     └────┬────┘
+     │                │                │                │                │
+     │ TCP Connect    │                │                │                │
+     │───────────────>│                │                │                │
+     │                │ EPOLLIN 事件   │                │                │
+     │                │───────────────>│                │                │
+     │                │                │                │                │
+     │                │                │ accept()       │                │
+     │                │                │ 接受连接       │                │
+     │                │                │                │                │
+     │ HTTP Request   │                │                │                │
+     │───────────────>│                │                │                │
+     │                │ EPOLLIN 事件   │                │                │
+     │                │───────────────>│                │                │
+     │                │                │                │                │
+     │                │                │ 读取请求       │                │
+     │                │                │ 解析头部       │                │
+     │                │                │                │                │
+     │                │                │ 匹配 location  │                │
+     │                │                │                │                │
+     │                │                │ proxy_pass     │                │
+     │                │                │───────────────>│                │
+     │                │                │                │                │
+     │                │ EPOLLOUT 事件  │                │                │
+     │                │<───────────────│                │                │
+     │                │                │                │                │
+     │                │                │ 读取后端响应   │                │
+     │                │<───────────────│                │                │
+     │                │                │                │                │
+     │ HTTP Response  │                │                │                │
+     │<───────────────│                │                │                │
+     │                │                │                │                │
+     │                │                │ 记录日志       │                │
+     │                │                │ 关闭连接       │                │
+     │                │                │                │                │
+                    </pre>
+                </div>
+
+                <h3 class="section-subtitle">事件处理流程</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4>1. 事件注册</h4>
+                        <p>Worker 启动时，将监听套接字注册到事件多路复用器（epoll/kqueue）</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2. 事件等待</h4>
+                        <p>调用 <code>epoll_wait()</code> 阻塞等待事件发生，超时时间由配置决定</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>3. 事件分发</h4>
+                        <p>事件发生后，根据文件描述符找到对应的连接和回调函数</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>4. 事件处理</h4>
+                        <p>执行回调函数处理请求，可能是读取、写入或关闭连接</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>5. 事件完成</h4>
+                        <p>处理完成后，可能注册新的事件（如写事件）或关闭连接</p>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">事件多路复用方法对比</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>方法</th>
+                            <th>操作系统</th>
+                            <th>性能</th>
+                            <th>特点</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>epoll</strong></td>
+                            <td>Linux 2.6+</td>
+                            <td>最优</td>
+                            <td>红黑树存储，O(1) 事件查找，支持边缘触发</td>
+                        </tr>
+                        <tr>
+                            <td><strong>kqueue</strong></td>
+                            <td>FreeBSD, macOS</td>
+                            <td>优秀</td>
+                            <td>BSD 系统原生，功能丰富</td>
+                        </tr>
+                        <tr>
+                            <td><strong>/dev/poll</strong></td>
+                            <td>Solaris, AIX</td>
+                            <td>良好</td>
+                            <td>内核级轮询，性能稳定</td>
+                        </tr>
+                        <tr>
+                            <td><strong>poll</strong></td>
+                            <td>跨平台</td>
+                            <td>一般</td>
+                            <td>线性扫描，连接数多时性能下降</td>
+                        </tr>
+                        <tr>
+                            <td><strong>select</strong></td>
+                            <td>跨平台</td>
+                            <td>较差</td>
+                            <td>有文件描述符数量限制（通常 1024）</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>💡 配置建议：</strong>
+                    <pre>
+# 自动选择最佳事件方法
+events {
+    use epoll;  # Linux 下推荐显式指定
+    
+    # 每个 Worker 的最大连接数
+    worker_connections 10240;
+    
+    # 接受多个连接
+    multi_accept on;
+    
+    # 使用互斥锁（高并发时建议关闭）
+    accept_mutex off;
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🧩 模块系统架构</h2>
+                
+                <div class="module-tree">
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│              Nginx 模块系统架构图                            │
+└─────────────────────────────────────────────────────────────┘
+
+【核心模块 Core Modules】(必选，无法禁用)
+├── ngx_core_module          (核心配置)
+├── ngx_errlog_module        (错误日志)
+├── ngx_conf_module          (配置解析)
+├── ngx_events_module        (事件处理)
+├── ngx_event_core_module    (事件核心)
+├── ngx_regex_module         (正则表达式)
+└── ngx_openssl_module       (SSL/TLS 支持)
+
+【HTTP 模块 HTTP Modules】
+├── 标准模块 (默认编译)
+│   ├── ngx_http_core_module         (HTTP 核心)
+│   ├── ngx_http_upstream_module     (负载均衡)
+│   ├── ngx_http_proxy_module        (反向代理)
+│   ├── ngx_http_fastcgi_module      (FastCGI)
+│   ├── ngx_http_gzip_module         (压缩)
+│   ├── ngx_http_ssl_module          (HTTPS)
+│   ├── ngx_http_v2_module           (HTTP/2)
+│   ├── ngx_http_v3_module           (HTTP/3)
+│   ├── ngx_http_limit_req_module    (请求限流)
+│   ├── ngx_http_limit_conn_module   (连接限制)
+│   ├── ngx_http_auth_basic_module   (基本认证)
+│   ├── ngx_http_rewrite_module      (URL 重写)
+│   └── ngx_http_log_module          (访问日志)
+│
+└── 可选模块 (需编译时启用)
+    ├── ngx_http_stub_status_module      (状态监控)
+    ├── ngx_http_sub_module              (内容替换)
+    ├── ngx_http_dav_module              (WebDAV)
+    ├── ngx_http_geoip_module            (GeoIP)
+    ├── ngx_http_lua_module              (Lua 脚本) ★
+    └── ngx_http_cache_purge_module      (缓存清除) ★
+
+【邮件代理模块 Mail Modules】
+├── ngx_mail_core_module
+├── ngx_mail_smtp_module
+├── ngx_mail_pop3_module
+├── ngx_mail_imap_module
+└── ngx_mail_ssl_module
+
+【TCP/UDP代理模块 Stream Modules】
+├── ngx_stream_core_module
+├── ngx_stream_proxy_module
+├── ngx_stream_ssl_module
+└── ngx_stream_upstream_module
+
+★ 第三方模块
+</pre>
+                </div>
+
+                <h3 class="section-subtitle">模块类型与处理阶段</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>模块类型</th>
+                            <th>处理阶段</th>
+                            <th>典型模块</th>
+                            <th>指令示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>配置模块</td>
+                            <td>启动时</td>
+                            <td>ngx_core_module</td>
+                            <td><code>worker_processes</code></td>
+                        </tr>
+                        <tr>
+                            <td>事件模块</td>
+                            <td>运行时</td>
+                            <td>ngx_event_core_module</td>
+                            <td><code>worker_connections</code></td>
+                        </tr>
+                        <tr>
+                            <td>处理阶段模块</td>
+                            <td>请求处理</td>
+                            <td>ngx_http_access_module</td>
+                            <td><code>allow</code>, <code>deny</code></td>
+                        </tr>
+                        <tr>
+                            <td>内容生成模块</td>
+                            <td>CONTENT 阶段</td>
+                            <td>ngx_http_proxy_module</td>
+                            <td><code>proxy_pass</code></td>
+                        </tr>
+                        <tr>
+                            <td>过滤器模块</td>
+                            <td>响应输出</td>
+                            <td>ngx_http_gzip_module</td>
+                            <td><code>gzip</code></td>
+                        </tr>
+                        <tr>
+                            <td>负载均衡模块</td>
+                            <td>上游选择</td>
+                            <td>ngx_http_upstream_module</td>
+                            <td><code>upstream</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box">
+                    <strong>📦 模块查看方法：</strong>
+                    <pre>
+# 查看已编译的模块
+nginx -V
+
+# 输出示例
+nginx version: nginx/1.24.0
+built by gcc ...
+configure arguments: --with-http_ssl_module --with-http_v2_module ...</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">⚡ 高性能设计原理</h2>
+                
+                <h3 class="section-subtitle">多进程 vs 多线程模型对比</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>Nginx (多进程)</th>
+                            <th>传统服务器 (多线程)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>进程/线程关系</td>
+                            <td>Worker 进程相互独立</td>
+                            <td>线程共享进程资源</td>
+                        </tr>
+                        <tr>
+                            <td>锁竞争</td>
+                            <td>无需锁（无共享状态）</td>
+                            <td>需要互斥锁保护共享资源</td>
+                        </tr>
+                        <tr>
+                            <td>故障隔离</td>
+                            <td>单个 Worker 崩溃不影响其他</td>
+                            <td>线程崩溃可能导致整个进程崩溃</td>
+                        </tr>
+                        <tr>
+                            <td>内存使用</td>
+                            <td>进程间内存独立</td>
+                            <td>线程共享内存空间</td>
+                        </tr>
+                        <tr>
+                            <td>扩展性</td>
+                            <td>多核 CPU 友好</td>
+                            <td>受 GIL 等限制</td>
+                        </tr>
+                        <tr>
+                            <td>调试难度</td>
+                            <td>相对简单</td>
+                            <td>死锁、竞态条件复杂</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">内存池设计</h3>
+                <div class="memory-layout">
+┌─────────────────────────────────────────────────────────────┐
+│                    Nginx 内存池结构                          │
+├─────────────────────────────────────────────────────────────┤
+│  ngx_pool_t (内存池头)                                       │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ d = ngx_pool_data_t                                 │   │
+│  │   ┌─────────────────────────────────────────────┐   │   │
+│  │   │ 已分配内存块 1 (ngx_pool_large_t)           │   │   │
+│  │   │   - 大内存分配（> 4KB）链表                  │   │   │
+│  │   └─────────────────────────────────────────────┘   │   │
+│  │   ┌─────────────────────────────────────────────┐   │   │
+│  │   │ 已分配内存块 2                               │   │   │
+│  │   └─────────────────────────────────────────────┘   │   │
+│  │                                                     │   │
+│  │   current ──> 当前小块分配位置                      │   │
+│  │   ┌─────────────────────────────────────────────┐   │   │
+│  │   │ ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │   │   │
+│  │   │ 已使用    空闲空间                          │   │   │
+│  │   └─────────────────────────────────────────────┘   │   │
+│  │                                                     │   │
+│  │ max = 4096 bytes (单次分配上限)                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│ cleanup ──> 清理回调函数链表                                │
+│   ┌─────────────────────────────────────────────────────┐  │
+│   │ cleanup handler: close_file                         │  │
+│   │ cleanup handler: free_memory                        │  │
+│   │ cleanup handler: destroy_temp_file                  │  │
+│   └─────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+
+内存分配策略:
+├── 小内存 (≤ 4KB): 从 pool->d.current 分配，指针移动
+└── 大内存 (> 4KB): 单独分配，加入 large 链表
+                </div>
+
+                <h3 class="section-subtitle">零拷贝技术</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>技术</th>
+                            <th>系统调用</th>
+                            <th>数据拷贝次数</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>传统 I/O</strong></td>
+                            <td>read + write</td>
+                            <td>4 次拷贝</td>
+                            <td>磁盘→内核→用户→内核→网卡</td>
+                        </tr>
+                        <tr>
+                            <td><strong>mmap</strong></td>
+                            <td>mmap + write</td>
+                            <td>3 次拷贝</td>
+                            <td>内存映射减少一次拷贝</td>
+                        </tr>
+                        <tr>
+                            <td><strong>sendfile</strong></td>
+                            <td>sendfile</td>
+                            <td>2 次拷贝</td>
+                            <td>内核态直接传输</td>
+                        </tr>
+                        <tr>
+                            <td><strong>sendfile + TCP_CORK</strong></td>
+                            <td>sendfile + setsockopt</td>
+                            <td>2 次拷贝</td>
+                            <td>延迟发送，合并小包</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>💡 零拷贝配置：</strong>
+                    <pre>
+http {
+    # 启用 sendfile 零拷贝
+    sendfile on;
+    
+    # 启用 tcp_nopush，配合 sendfile 使用
+    tcp_nopush on;
+    
+    # 启用 tcp_nodelay，禁用 Nagle 算法
+    tcp_nodelay on;
+    
+    # sendfile 单次最大传输量
+    sendfile_max_chunk 2m;
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🔗 连接处理机制</h2>
+                
+                <div class="sequence-diagram">
+                    <pre>
+┌─────────┐     ┌──────────┐     ┌─────────┐     ┌─────────┐
+│  Client │     │  Listen  │     │ Worker  │     │  Free   │
+│         │     │  Socket  │     │  Pool   │     │  List   │
+└────┬────┘     └────┬─────┘     └────┬────┘     └────┬────┘
+     │                │                │                │
+     │ SYN            │                │                │
+     │───────────────>│                │                │
+     │                │                │                │
+     │ SYN-ACK        │                │                │
+     │<───────────────│                │                │
+     │                │                │                │
+     │ ACK            │                │                │
+     │───────────────>│                │                │
+     │                │                │                │
+     │                │ accept()       │                │
+     │                │───────────────>│                │
+     │                │                │                │
+     │                │                │ 从空闲链表获取 │
+     │                │                │ ngx_connection │
+     │                │                │───────────────>│
+     │                │                │                │
+     │                │                │ 初始化连接     │
+     │                │                │ - 设置回调     │
+     │                │                │ - 注册读事件   │
+     │                │                │                │
+     │ HTTP Request   │                │                │
+     │───────────────>│                │                │
+     │                │                │                │
+     │                │ 读事件触发     │                │
+     │                │───────────────>│                │
+     │                │                │                │
+     │                │                │ 读取并解析请求 │
+     │                │                │                │
+     │                │                │ 处理请求       │
+     │                │                │                │
+     │ HTTP Response  │                │                │
+     │<───────────────│                │                │
+     │                │                │                │
+     │                │                │ 连接回收       │
+     │                │                │ (keepalive)    │
+     │                │                │                │
+                    </pre>
+                </div>
+
+                <h3 class="section-subtitle">连接状态流转</h3>
+                <div class="flow-container">
+                    <div class="flow-diagram">
+                        <div class="flow-box">
+                            <strong>FREE</strong>
+                            <br><small>空闲状态</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box">
+                            <strong>ACCEPT</strong>
+                            <br><small>接受连接</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box">
+                            <strong>READ</strong>
+                            <br><small>读取请求</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box">
+                            <strong>PROCESS</strong>
+                            <br><small>处理请求</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box">
+                            <strong>WRITE</strong>
+                            <br><small>写入响应</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box">
+                            <strong>KEEPALIVE</strong>
+                            <br><small>保持连接</small>
+                        </div>
+                        <div class="flow-arrow">↺</div>
+                        <div class="flow-box">
+                            <strong>FREE</strong>
+                            <br><small>回收到空闲链表</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">连接池配置</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>指令</th>
+                            <th>默认值</th>
+                            <th>说明</th>
+                            <th>调优建议</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>worker_connections</code></td>
+                            <td>1024</td>
+                            <td>每个 Worker 最大连接数</td>
+                            <td>根据内存和负载调整，建议 10240+</td>
+                        </tr>
+                        <tr>
+                            <td><code>worker_rlimit_nofile</code></td>
+                            <td>-</td>
+                            <td>Worker 最大文件描述符</td>
+                            <td>应 ≥ worker_connections × 2</td>
+                        </tr>
+                        <tr>
+                            <td><code>keepalive_timeout</code></td>
+                            <td>75s</td>
+                            <td>长连接超时</td>
+                            <td>根据业务调整，API 可设短些</td>
+                        </tr>
+                        <tr>
+                            <td><code>keepalive_requests</code></td>
+                            <td>100</td>
+                            <td>长连接最大请求数</td>
+                            <td>建议 1000+ 减少握手</td>
+                        </tr>
+                        <tr>
+                            <td><code>keepalive_time</code></td>
+                            <td>∞</td>
+                            <td>长连接最大使用时间</td>
+                            <td>1.19.10+ 新增，防止连接老化</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">📊 配置加载与热更新</h2>
+                
+                <div class="flow-container">
+                    <div class="flow-diagram">
+                        <div class="flow-box master">
+                            <strong>Master</strong>
+                            <br><small>接收信号</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box module">
+                            <strong>读取配置</strong>
+                            <br><small>nginx.conf</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box module">
+                            <strong>验证配置</strong>
+                            <br><small>语法检查</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box decision" style="border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <strong>成功？</strong>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box worker">
+                            <strong>通知 Worker</strong>
+                            <br><small>发送信号</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box worker">
+                            <strong>Worker 重启</strong>
+                            <br><small>平滑过渡</small>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-subtitle">信号处理</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>信号</th>
+                            <th>发送给</th>
+                            <th>作用</th>
+                            <th>命令示例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>HUP</code></td>
+                            <td>Master</td>
+                            <td>重新加载配置</td>
+                            <td><code>nginx -s reload</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>USR1</code></td>
+                            <td>Master</td>
+                            <td>重新打开日志文件（日志轮转）</td>
+                            <td><code>kill -USR1 $(cat nginx.pid)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>USR2</code></td>
+                            <td>Master</td>
+                            <td>热升级（启动新 Master）</td>
+                            <td><code>kill -USR2 $(cat nginx.pid)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>WINCH</code></td>
+                            <td>Master</td>
+                            <td>优雅关闭 Worker（升级后）</td>
+                            <td><code>kill -WINCH $(cat nginx.pid.oldbin)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>TERM</code></td>
+                            <td>Master/Worker</td>
+                            <td>快速关闭</td>
+                            <td><code>nginx -s stop</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>QUIT</code></td>
+                            <td>Master/Worker</td>
+                            <td>优雅关闭（完成当前请求）</td>
+                            <td><code>nginx -s quit</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>🔄 热升级流程：</strong>
+                    <pre>
+# 1. 备份旧二进制
+sudo cp /usr/sbin/nginx /usr/sbin/nginx.old
+
+# 2. 替换新二进制
+sudo cp nginx-new /usr/sbin/nginx
+
+# 3. 发送 USR2 信号，启动新 Master
+sudo kill -USR2 $(cat /var/run/nginx.pid)
+
+# 4. 验证新版本
+ps aux | grep nginx
+
+# 5. 优雅关闭旧 Worker
+sudo kill -WINCH $(cat /var/run/nginx.pid.oldbin)
+
+# 6. 确认无误后关闭旧 Master
+sudo kill -QUIT $(cat /var/run/nginx.pid.oldbin)
+
+# 如需回滚
+sudo kill -USR2 $(cat /var/run/nginx.pid)
+sudo kill -WINCH $(cat /var/run/nginx.pid.oldbin)</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">📈 性能调优参数</h2>
+                
+                <h3 class="section-subtitle">核心参数配置</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>参数类别</th>
+                            <th>指令</th>
+                            <th>推荐值</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="3">进程配置</td>
+                            <td><code>worker_processes</code></td>
+                            <td><code>auto</code></td>
+                            <td>自动检测 CPU 核心数</td>
+                        </tr>
+                        <tr>
+                            <td><code>worker_rlimit_nofile</code></td>
+                            <td>65535</td>
+                            <td>最大文件打开数</td>
+                        </tr>
+                        <tr>
+                            <td><code>worker_connections</code></td>
+                            <td>10240-65535</td>
+                            <td>每 Worker 连接数</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="4">网络优化</td>
+                            <td><code>sendfile</code></td>
+                            <td><code>on</code></td>
+                            <td>启用零拷贝</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp_nopush</code></td>
+                            <td><code>on</code></td>
+                            <td>TCP 包优化</td>
+                        </tr>
+                        <tr>
+                            <td><code>tcp_nodelay</code></td>
+                            <td><code>on</code></td>
+                            <td>禁用 Nagle 算法</td>
+                        </tr>
+                        <tr>
+                            <td><code>keepalive_timeout</code></td>
+                            <td>65s</td>
+                            <td>长连接超时</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">缓存优化</td>
+                            <td><code>open_file_cache</code></td>
+                            <td><code>max=10000 inactive=20s</code></td>
+                            <td>文件缓存</td>
+                        </tr>
+                        <tr>
+                            <td><code>open_file_cache_valid</code></td>
+                            <td>60s</td>
+                            <td>缓存检查间隔</td>
+                        </tr>
+                        <tr>
+                            <td><code>open_file_cache_min_uses</code></td>
+                            <td>2</td>
+                            <td>最小使用次数</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">缓冲优化</td>
+                            <td><code>client_body_buffer_size</code></td>
+                            <td>16k-128k</td>
+                            <td>请求体缓冲</td>
+                        </tr>
+                        <tr>
+                            <td><code>proxy_buffer_size</code></td>
+                            <td>8k-16k</td>
+                            <td>代理响应头缓冲</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box">
+                    <strong>💡 完整优化配置示例：</strong>
+                    <pre>
+# 进程配置
+worker_processes auto;
+worker_rlimit_nofile 65535;
+
+events {
+    use epoll;
+    worker_connections 65535;
+    multi_accept on;
+    accept_mutex off;
+}
+
+http {
+    # 基础优化
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    
+    # 连接优化
+    keepalive_timeout 65;
+    keepalive_requests 1000;
+    keepalive_time 1h;
+    
+    # 文件缓存
+    open_file_cache max=10000 inactive=20s;
+    open_file_cache_valid 60s;
+    open_file_cache_min_uses 2;
+    
+    # 缓冲配置
+    client_body_buffer_size 128k;
+    client_max_body_size 100m;
+    
+    # 代理缓冲
+    proxy_buffer_size 16k;
+    proxy_buffers 8 32k;
+    proxy_busy_buffers_size 64k;
+}</pre>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>Nginx 学习教程 - 掌握核心配置</p>
+        </div>
+    </footer>
 </body>
 </html>

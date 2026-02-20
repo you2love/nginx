@@ -5,6 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nginx 请求处理流程 - 完整生命周期</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .flow-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .flow-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .flow-box {
+            background: white;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 140px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .flow-box.phase {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+        .flow-box.action {
+            background: #fff3e0;
+            border-color: #f57c00;
+        }
+        .flow-box.decision {
+            background: #fce4ec;
+            border-color: #c2185b;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .flow-arrow {
+            color: #666;
+            font-size: 24px;
+        }
+        .phase-detail {
+            background: white;
+            border-left: 4px solid #007acc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .phase-detail h4 {
+            color: #007acc;
+            margin-top: 0;
+        }
+        .phase-number {
+            display: inline-block;
+            background: #007acc;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+        }
+        .directive-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .directive-tag {
+            background: #f4f4f4;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+        }
+        .directive-tag code {
+            background: transparent;
+            padding: 0;
+        }
+        .sequence-diagram {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .sequence-diagram pre {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .note-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .info-table th, .info-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .info-table code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -27,34 +161,643 @@
         <section class="section">
             <div class="container">
                 <h1 class="page-title">Nginx 请求处理流程</h1>
-                <p class="page-intro">理解HTTP请求从进入到响应的完整11个处理阶段</p>
+                <p class="page-intro">理解 HTTP 请求从进入到响应的完整 11 个处理阶段</p>
             </div>
         </section>
 
-        <section class="section bg-light">
+        <section class="section">
             <div class="container">
-                <h2 class="section-title">11个处理阶段</h2>
+                <h2 class="section-title">📊 请求处理流程图</h2>
+                
+                <div class="flow-container">
+                    <div class="flow-diagram">
+                        <div class="flow-box action">
+                            <strong>客户端请求</strong>
+                            <br><small>HTTP Request</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>1. POST_READ</strong>
+                            <br><small>读取请求</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>2. SERVER_REWRITE</strong>
+                            <br><small>Server 级重写</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box decision">
+                            <strong>3. FIND_CONFIG</strong>
+                            <br><small>查找 Location</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>4. REWRITE</strong>
+                            <br><small>Location 级重写</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>5. POST_REWRITE</strong>
+                            <br><small>重写后检查</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>6. PREACCESS</strong>
+                            <br><small>访问前处理</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>7. ACCESS</strong>
+                            <br><small>访问控制</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>8. POST_ACCESS</strong>
+                            <br><small>访问后处理</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>9. TRY_FILES</strong>
+                            <br><small>文件检查</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>10. CONTENT</strong>
+                            <br><small>内容生成</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box phase">
+                            <strong>11. LOG</strong>
+                            <br><small>日志记录</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-box action">
+                            <strong>响应返回</strong>
+                            <br><small>HTTP Response</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>💡 说明：</strong> 请求按照从上到下的顺序依次经过 11 个处理阶段，每个阶段可能有多个模块注册的处理函数。阶段之间可以跳转或终止。
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🔄 请求处理序列图</h2>
+                
+                <div class="sequence-diagram">
+                    <pre>
+┌────────┐     ┌─────────┐     ┌──────────┐     ┌─────────┐     ┌────────┐
+│ Client │     │ Nginx   │     │ Location │     │ Backend │     │  Log   │
+│        │     │ Core    │     │ Matcher  │     │ Server  │     │        │
+└───┬────┘     └────┬────┘     └────┬─────┘     └────┬────┘     └───┬────┘
+    │                │                │                │             │
+    │ HTTP Request   │                │                │             │
+    │───────────────>│                │                │             │
+    │                │                │                │             │
+    │                │ POST_READ      │                │             │
+    │                │ (realip 等)    │                │             │
+    │                │                │                │             │
+    │                │ SERVER_REWRITE │                │             │
+    │                │ (server rewrite)               │             │
+    │                │                │                │             │
+    │                │ FIND_CONFIG ──>│                │             │
+    │                │ (匹配 location) │                │             │
+    │                │<───────────────│                │             │
+    │                │                │                │             │
+    │                │ REWRITE        │                │             │
+    │                │ (location rewrite)             │             │
+    │                │                │                │             │
+    │                │ POST_REWRITE   │                │             │
+    │                │ (重写检查)      │                │             │
+    │                │                │                │             │
+    │                │ PREACCESS      │                │             │
+    │                │ (limit_req 等) │                │             │
+    │                │                │                │             │
+    │                │ ACCESS ────────────────────────>│             │
+    │                │ (allow/deny)   │                │             │
+    │                │                │                │             │
+    │                │ POST_ACCESS    │                │             │
+    │                │                │                │             │
+    │                │ TRY_FILES      │                │             │
+    │                │ (文件检查)      │                │             │
+    │                │                │                │             │
+    │                │ CONTENT ──────────────────────>│             │
+    │                │ (proxy_pass/   │                │             │
+    │                │  fastcgi_pass) │                │             │
+    │                │                │                │             │
+    │                │<────────────────────────────────│             │
+    │                │                │                │ Response    │
+    │                │                │                │             │
+    │                │                │                │             │
+    │                │ LOG ─────────────────────────────────────────>│
+    │                │ (access_log)   │                │             │
+    │                │                │                │             │
+    │ HTTP Response  │                │                │             │
+    │<───────────────│                │                │             │
+    │                │                │                │             │
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">📋 11 个处理阶段详解</h2>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">1</span>NGX_HTTP_POST_READ_PHASE - 读取请求后阶段</h4>
+                    <p><strong>说明：</strong> 请求被完整读取后的第一个处理阶段，通常用于修改请求头或记录请求信息。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>real_ip_header</code></span>
+                        <span class="directive-tag"><code>set_real_ip_from</code></span>
+                        <span class="directive-tag"><code>real_ip_recursive</code></span>
+                        <span class="directive-tag"><code>mirror</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>获取客户端真实 IP（通过 X-Forwarded-For 等头）</li>
+                        <li>请求镜像（流量复制）</li>
+                        <li>请求头修改</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+# 获取真实 IP
+set_real_ip_from 10.0.0.0/8;
+real_ip_header X-Forwarded-For;
+real_ip_recursive on;</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">2</span>NGX_HTTP_SERVER_REWRITE_PHASE - Server 级重写阶段</h4>
+                    <p><strong>说明：</strong> 在 server 块中执行的 URL 重写，此时尚未确定 location。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>rewrite</code></span>
+                        <span class="directive-tag"><code>return</code></span>
+                        <span class="directive-tag"><code>set</code></span>
+                        <span class="directive-tag"><code>if</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>HTTP 强制跳转 HTTPS</li>
+                        <li>域名重定向</li>
+                        <li>URL 规范化</li>
+                        <li>旧 URL 重定向到新 URL</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+server {
+    listen 80;
+    server_name example.com;
+    
+    # HTTP 强制跳转 HTTPS
+    return 301 https://$host$request_uri;
+    
+    # 旧 URL 重定向
+    rewrite ^/old/(.*)$ /new/$1 permanent;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">3</span>NGX_HTTP_FIND_CONFIG_PHASE - 查找配置阶段</h4>
+                    <p><strong>说明：</strong> 根据请求 URI 查找匹配的 location 配置。此阶段 Nginx 内部处理，无法直接干预。</p>
+                    <p><strong>匹配优先级：</strong></p>
+                    <ol>
+                        <li><code>= /path</code> - 精确匹配（优先级最高）</li>
+                        <li><code>^~ /path</code> - 前缀匹配，停止正则搜索</li>
+                        <li><code>~ pattern</code> - 正则匹配（区分大小写）</li>
+                        <li><code>~* pattern</code> - 正则匹配（不区分大小写）</li>
+                        <li><code>/path</code> - 普通前缀匹配（优先级最低）</li>
+                    </ol>
+                    <div class="warning-box">
+                        <strong>⚠️ 注意：</strong> 此阶段是 Nginx 内部处理，不执行任何模块 handler，仅确定使用哪个 location 配置。
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">4</span>NGX_HTTP_REWRITE_PHASE - Location 级重写阶段</h4>
+                    <p><strong>说明：</strong> 在 location 块中执行的 URL 重写。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>rewrite</code></span>
+                        <span class="directive-tag"><code>return</code></span>
+                        <span class="directive-tag"><code>set</code></span>
+                        <span class="directive-tag"><code>if</code></span>
+                        <span class="directive-tag"><code>break</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>URL 重写（伪静态）</li>
+                        <li>条件重定向</li>
+                        <li>变量设置</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+location /blog/ {
+    # 伪静态：将 /blog/123 重写为 /blog.php?id=123
+    rewrite ^/blog/([0-9]+)$ /blog.php?id=$1 last;
+    
+    # 条件判断
+    if ($request_method = POST) {
+        return 403;
+    }
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">5</span>NGX_HTTP_POST_REWRITE_PHASE - 重写后检查阶段</h4>
+                    <p><strong>说明：</strong> 检查 rewrite 是否导致 URI 变化，如果变化则重新进入 FIND_CONFIG 阶段。</p>
+                    <p><strong>常用指令：</strong> 无（内部处理阶段）</p>
+                    <div class="warning-box">
+                        <strong>⚠️ 注意：</strong> 如果 rewrite 使用了 <code>last</code> 或 <code>redirect</code>/<code>permanent</code>，会重新进入 location 匹配流程，可能导致循环。
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">6</span>NGX_HTTP_PREACCESS_PHASE - 访问控制前阶段</h4>
+                    <p><strong>说明：</strong> 在进行访问控制检查之前的预处理阶段。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>limit_req_zone</code></span>
+                        <span class="directive-tag"><code>limit_conn_zone</code></span>
+                        <span class="directive-tag"><code>limit_req</code></span>
+                        <span class="directive-tag"><code>limit_conn</code></span>
+                        <span class="directive-tag"><code>add_header</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>请求速率限制</li>
+                        <li>连接数限制</li>
+                        <li>添加安全响应头</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+# 定义限流区域
+limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
+
+# 应用限流
+location /api/ {
+    limit_req zone=one burst=20 nodelay;
+    proxy_pass http://backend;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">7</span>NGX_HTTP_ACCESS_PHASE - 访问控制阶段</h4>
+                    <p><strong>说明：</strong> 执行访问控制检查，决定请求是否被允许。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>allow</code></span>
+                        <span class="directive-tag"><code>deny</code></span>
+                        <span class="directive-tag"><code>auth_basic</code></span>
+                        <span class="directive-tag"><code>auth_basic_user_file</code></span>
+                        <span class="directive-tag"><code>auth_request</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>IP 黑白名单</li>
+                        <li>HTTP 基本认证</li>
+                        <li>子请求认证</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+location /admin/ {
+    # IP 访问控制
+    allow 192.168.1.0/24;
+    deny all;
+    
+    # 基本认证
+    auth_basic "Admin Area";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">8</span>NGX_HTTP_POST_ACCESS_PHASE - 访问控制后阶段</h4>
+                    <p><strong>说明：</strong> 访问控制检查后的处理阶段，用于满足 post_action 指令的需求。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>post_action</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>请求后处理（如统计、通知）</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong>⚠️ 注意：</strong> post_action 在主请求完成后执行，通常用于后台处理任务。
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">9</span>NGX_HTTP_TRY_FILES_PHASE - 文件检查阶段</h4>
+                    <p><strong>说明：</strong> 处理 try_files 指令，按顺序检查文件是否存在。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>try_files</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>SPA 应用路由支持</li>
+                        <li>静态文件回退</li>
+                        <li>自定义 404 处理</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+# SPA 应用配置
+location / {
+    try_files $uri $uri/ /index.html;
+}
+
+# 静态文件服务
+location /files/ {
+    try_files $uri $uri/ =404;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">10</span>NGX_HTTP_CONTENT_PHASE - 内容生成阶段</h4>
+                    <p><strong>说明：</strong> 生成响应内容的核心阶段，多个模块可以注册 handler。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>proxy_pass</code></span>
+                        <span class="directive-tag"><code>fastcgi_pass</code></span>
+                        <span class="directive-tag"><code>uwsgi_pass</code></span>
+                        <span class="directive-tag"><code>scgi_pass</code></span>
+                        <span class="directive-tag"><code>grpc_pass</code></span>
+                        <span class="directive-tag"><code>return</code></span>
+                        <span class="directive-tag"><code>root</code></span>
+                        <span class="directive-tag"><code>alias</code></span>
+                        <span class="directive-tag"><code>index</code></span>
+                        <span class="directive-tag"><code>autoindex</code></span>
+                        <span class="directive-tag"><code>stub_status</code></span>
+                        <span class="directive-tag"><code>echo</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>反向代理</li>
+                        <li>FastCGI/PHP 处理</li>
+                        <li>静态文件服务</li>
+                        <li>目录列表</li>
+                        <li>健康检查</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+# 反向代理
+location /api/ {
+    proxy_pass http://backend:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+
+# 静态文件服务
+location /static/ {
+    root /var/www;
+    expires 30d;
+    gzip on;
+}
+
+# PHP 处理
+location ~ \.php$ {
+    fastcgi_pass 127.0.0.1:9000;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="phase-detail">
+                    <h4><span class="phase-number">11</span>NGX_HTTP_LOG_PHASE - 日志记录阶段</h4>
+                    <p><strong>说明：</strong> 请求处理完成后的日志记录阶段。</p>
+                    <p><strong>常用指令：</strong></p>
+                    <div class="directive-list">
+                        <span class="directive-tag"><code>access_log</code></span>
+                        <span class="directive-tag"><code>log_format</code></span>
+                        <span class="directive-tag"><code>open_log_file_cache</code></span>
+                        <span class="directive-tag"><code>log_not_found</code></span>
+                        <span class="directive-tag"><code>log_subrequest</code></span>
+                    </div>
+                    <p><strong>典型应用：</strong></p>
+                    <ul>
+                        <li>访问日志记录</li>
+                        <li>自定义日志格式</li>
+                        <li>日志缓冲</li>
+                    </ul>
+                    <div class="highlight-box">
+                        <pre>
+# 自定义日志格式
+log_format main '$remote_addr - $remote_user [$time_local] '
+                '"$request" $status $body_bytes_sent '
+                '"$http_referer" "$http_user_agent" '
+                '$request_time $upstream_response_time';
+
+# 应用日志格式
+access_log /var/log/nginx/access.log main buffer=32k flush=1m;</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">📊 阶段与指令对应表</h2>
                 <table class="info-table">
                     <thead>
-                        <tr><th>阶段</th><th>名称</th><th>说明</th></tr>
+                        <tr>
+                            <th>阶段</th>
+                            <th>阶段名称</th>
+                            <th>常用指令</th>
+                            <th>是否可跳过</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>1</td><td>NGX_HTTP_POST_READ_PHASE</td><td>读取请求后第一个阶段</td></tr>
-                        <tr><td>2</td><td>NGX_HTTP_SERVER_REWRITE_PHASE</td><td>Server级别的URL重写</td></tr>
-                        <tr><td>3</td><td>NGX_HTTP_FIND_CONFIG_PHASE</td><td>查找location配置</td></tr>
-                        <tr><td>4</td><td>NGX_HTTP_REWRITE_PHASE</td><td>Location级别的URL重写</td></tr>
-                        <tr><td>5</td><td>NGX_HTTP_POST_REWRITE_PHASE</td><td>重写后检查</td></tr>
-                        <tr><td>6</td><td>NGX_HTTP_PREACCESS_PHASE</td><td>访问控制前处理</td></tr>
-                        <tr><td>7</td><td>NGX_HTTP_ACCESS_PHASE</td><td>访问控制检查</td></tr>
-                        <tr><td>8</td><td>NGX_HTTP_POST_ACCESS_PHASE</td><td>访问控制后处理</td></tr>
-                        <tr><td>9</td><td>NGX_HTTP_TRY_FILES_PHASE</td><td>try_files处理</td></tr>
-                        <tr><td>10</td><td>NGX_HTTP_CONTENT_PHASE</td><td>内容生成</td></tr>
-                        <tr><td>11</td><td>NGX_HTTP_LOG_PHASE</td><td>日志记录</td></tr>
+                        <tr>
+                            <td>1</td>
+                            <td>POST_READ</td>
+                            <td><code>real_ip_header</code>, <code>set_real_ip_from</code>, <code>mirror</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>SERVER_REWRITE</td>
+                            <td><code>rewrite</code>, <code>return</code>, <code>set</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>FIND_CONFIG</td>
+                            <td>（内部处理）</td>
+                            <td>否</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>REWRITE</td>
+                            <td><code>rewrite</code>, <code>return</code>, <code>set</code>, <code>if</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>POST_REWRITE</td>
+                            <td>（内部处理）</td>
+                            <td>否</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>PREACCESS</td>
+                            <td><code>limit_req</code>, <code>limit_conn</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>ACCESS</td>
+                            <td><code>allow</code>, <code>deny</code>, <code>auth_basic</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>POST_ACCESS</td>
+                            <td><code>post_action</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>TRY_FILES</td>
+                            <td><code>try_files</code></td>
+                            <td>是</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>CONTENT</td>
+                            <td><code>proxy_pass</code>, <code>fastcgi_pass</code>, <code>root</code>, <code>return</code></td>
+                            <td>否</td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>LOG</td>
+                            <td><code>access_log</code>, <code>log_format</code></td>
+                            <td>是</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">💡 请求处理示例</h2>
+                
+                <div class="note-box">
+                    <strong>示例场景：</strong> 用户请求 <code>http://example.com/api/users</code>，Nginx 如何处理？
+                </div>
+
+                <div class="highlight-box">
+                    <pre>
+http {
+    # ===== 阶段 1: POST_READ =====
+    # 获取真实 IP
+    set_real_ip_from 10.0.0.0/8;
+    real_ip_header X-Forwarded-For;
+    
+    # ===== 阶段 6: PREACCESS =====
+    # 定义限流区域
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+    
+    server {
+        listen 80;
+        server_name example.com;
+        
+        # ===== 阶段 2: SERVER_REWRITE =====
+        # 强制 HTTPS
+        if ($scheme = http) {
+            return 301 https://$host$request_uri;
+        }
+        
+        # ===== 阶段 7-10: 处理/api/请求 =====
+        location /api/ {
+            # ===== 阶段 4: REWRITE =====
+            # URL 重写（如有需要）
+            rewrite ^/api/v1/(.*)$ /api/$1 break;
+            
+            # ===== 阶段 6: PREACCESS =====
+            # 应用限流
+            limit_req zone=api_limit burst=20 nodelay;
+            
+            # ===== 阶段 7: ACCESS =====
+            # IP 限制
+            allow 192.168.0.0/16;
+            deny all;
+            
+            # ===== 阶段 10: CONTENT =====
+            # 反向代理
+            proxy_pass http://backend:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+        
+        # ===== 阶段 10: CONTENT (静态文件) =====
+        location /static/ {
+            root /var/www;
+            expires 30d;
+            add_header Cache-Control "public, immutable";
+        }
+        
+        # ===== 阶段 9: TRY_FILES (SPA 应用) =====
+        location /app/ {
+            try_files $uri $uri/ /app/index.html;
+        }
+        
+        # ===== 阶段 11: LOG =====
+        access_log /var/log/nginx/access.log;
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">⚠️ 注意事项</h2>
+                
+                <div class="warning-box">
+                    <strong>rewrite 循环问题：</strong> 使用 <code>last</code> 标志时，会重新进入 location 匹配流程，可能导致无限循环。建议使用 <code>break</code> 或在重写后的 location 中避免再次匹配。
+                </div>
+                
+                <div class="warning-box">
+                    <strong>if 指令的局限性：</strong> <code>if</code> 指令在 rewrite 阶段执行，行为可能不符合预期。避免在 <code>if</code> 中使用 <code>set</code>、<code>rewrite</code> 以外的指令。
+                </div>
+                
+                <div class="warning-box">
+                    <strong>阶段跳转：</strong> 某些指令会导致请求跳转到其他阶段，如 <code>error_page</code> 会创建内部重定向，<code>try_files</code> 可能直接返回 404。
+                </div>
+                
+                <div class="note-box">
+                    <strong>性能提示：</strong> 
+                    <ul>
+                        <li>将常用的访问控制放在靠前的阶段</li>
+                        <li>避免过多的 rewrite 规则</li>
+                        <li>使用 <code>break</code> 代替 <code>last</code> 减少重新匹配</li>
+                        <li>合理使用缓存和过期头减少后端压力</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>Nginx 学习教程 - 掌握核心配置</p>
+        </div>
+    </footer>
 </body>
 </html>
