@@ -4,241 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nginx 日志调试 - 问题排查指南</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-        }
-        .header {
-            background: linear-gradient(135deg, #009639 0%, #007a2e 100%);
-            color: white;
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        .header .tagline {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        .nav {
-            background: rgba(0,0,0,0.1);
-            margin-top: 15px;
-            padding: 10px 0;
-            border-radius: 4px;
-        }
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            margin-right: 5px;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .nav a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        .nav a.active {
-            background: rgba(255,255,255,0.3);
-        }
-        .section {
-            background: white;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .page-title {
-            font-size: 32px;
-            color: #009639;
-            margin-bottom: 10px;
-        }
-        .page-intro {
-            color: #666;
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-        .section-title {
-            font-size: 24px;
-            color: #333;
-            margin: 30px 0 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #009639;
-        }
-        .section-subtitle {
-            font-size: 18px;
-            color: #009639;
-            margin: 25px 0 15px;
-        }
-        .config-example {
-            background: #263238;
-            color: #aed581;
-            padding: 20px;
-            border-radius: 6px;
-            margin: 15px 0;
-            overflow-x: auto;
-        }
-        .config-example pre {
-            margin: 0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .note-box {
-            background: #d1ecf1;
-            border-left: 4px solid #17a2b8;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .warning-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .tip-box {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .info-table th, .info-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .info-table th {
-            background: #f8f9fa;
-            font-weight: bold;
-        }
-        .info-table code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-        .log-levels {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .log-level {
-            padding: 15px;
-            border-radius: 6px;
-            color: white;
-        }
-        .log-level.emerg { background: #d32f2f; }
-        .log-level.alert { background: #f44336; }
-        .log-level.crit { background: #ff5722; }
-        .log-level.error { background: #ff9800; }
-        .log-level.warn { background: #ffc107; color: #333; }
-        .log-level.notice { background: #2196f3; }
-        .log-level.info { background: #4caf50; }
-        .log-level.debug { background: #9e9e9e; }
-        .debug-section {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .debug-section h4 {
-            color: #009639;
-            margin-top: 0;
-        }
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-            margin: 20px 0;
-        }
-        .timeline-item {
-            position: relative;
-            padding-bottom: 20px;
-            border-left: 2px solid #009639;
-            padding-left: 20px;
-        }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #009639;
-        }
-        .timeline-item h4 {
-            margin: 0 0 5px 0;
-            color: #009639;
-        }
-        .checklist {
-            list-style: none;
-            margin: 15px 0;
-        }
-        .checklist li {
-            padding: 10px 0;
-            padding-left: 30px;
-            position: relative;
-        }
-        .checklist li::before {
-            content: '☐';
-            position: absolute;
-            left: 0;
-            font-size: 18px;
-            color: #009639;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
-            <h1>Nginx 深度学习</h1>
-            <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
             <nav class="nav">
-                <a href="index.html">首页</a>
-                <a href="mechanism.html">内部机制</a>
-                <a href="request-flow.html">请求处理</a>
-                <a href="directives.html">指令详解</a>
-                <a href="configs.html">应用配置</a>
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
                 <a href="debug.html" class="nav-link active">日志调试</a>
             </nav>
         </div>
     </header>
 
     <main>
+        <!-- 页面标题 -->
         <section class="section">
             <div class="container">
                 <h1 class="page-title">🔍 Nginx 日志调试</h1>
-                <p class="page-intro">掌握 Nginx 日志分析和调试技巧，快速定位和解决问题</p>
+                <p class="page-intro">掌握日志分析和调试技巧，快速定位和解决问题</p>
+                
+                <div class="tip-box">
+                    <strong>📌 快速导航：</strong>
+                    <a href="#log-levels" style="color: #0c5460;">日志级别</a> · 
+                    <a href="#log-config" style="color: #0c5460;">日志配置</a> · 
+                    <a href="#debug-tools" style="color: #0c5460;">调试工具</a> · 
+                    <a href="#troubleshooting" style="color: #0c5460;">问题排查</a> · 
+                    <a href="#checklist" style="color: #0c5460;">检查清单</a>
+                </div>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第一部分：日志基础 -->
+        <section class="section" id="log-levels">
             <div class="container">
-                <h2 class="section-title">📝 日志级别详解</h2>
+                <h2 class="section-title">📝 一、日志级别详解</h2>
                 
                 <div class="log-levels">
                     <div class="log-level emerg">emerg<br><small>紧急 - 系统不可用</small></div>
@@ -252,10 +59,10 @@
                 </div>
 
                 <div class="config-example">
-                    <pre># 设置错误日志级别
+                    <pre># 基础配置 - 设置错误日志级别
 error_log /var/log/nginx/error.log warn;
 
-# 不同位置可设置不同级别
+# 分级配置 - 不同位置使用不同级别
 http {
     error_log /var/log/nginx/http_error.log error;
     
@@ -270,39 +77,44 @@ http {
                 </div>
 
                 <div class="tip-box">
-                    <strong>💡 调试建议：</strong> 生产环境使用 <code>warn</code> 或 <code>error</code> 级别，调试时使用 <code>debug</code> 级别（需要编译时启用 <code>--with-debug</code>）
+                    <strong>💡 生产环境建议：</strong>
+                    <ul>
+                        <li>生产环境：使用 <code>warn</code> 或 <code>error</code> 级别</li>
+                        <li>测试环境：使用 <code>notice</code> 或 <code>info</code> 级别</li>
+                        <li>调试环境：使用 <code>debug</code> 级别（需编译时启用 <code>--with-debug</code>）</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第二部分：日志配置 -->
+        <section class="section bg-light" id="log-config">
             <div class="container">
-                <h2 class="section-title">📊 访问日志配置</h2>
-                
-                <h3 class="section-subtitle">自定义日志格式</h3>
+                <h2 class="section-title">📊 二、访问日志配置</h2>
+
+                <h3 class="section-subtitle">2.1 自定义日志格式</h3>
                 <div class="config-example">
                     <pre>http {
-    # 基础日志格式
+    # 基础格式 - 标准组合日志
     log_format basic '$remote_addr - $remote_user [$time_local] '
                      '"$request" $status $body_bytes_sent '
                      '"$http_referer" "$http_user_agent"';
     
-    # 详细日志格式（推荐）
+    # 详细格式 - 推荐用于生产环境
     log_format main '$remote_addr - $remote_user [$time_local] '
                     '"$request" $status $body_bytes_sent '
                     '"$http_referer" "$http_user_agent" '
-                    '"$http_x_forwarded_for" '
                     'rt=$request_time '
                     'uct="$upstream_connect_time" '
                     'uht="$upstream_header_time" '
                     'urt="$upstream_response_time"';
     
-    # JSON 格式（便于日志分析系统）
+    # JSON 格式 - 用于 ELK 等日志分析系统
     log_format json escape=json '{'
         '"time":"$time_iso8601",'
         '"remote_addr":"$remote_addr",'
         '"request":"$request",'
-        '"status": "$status",'
+        '"status":"$status",'
         '"body_bytes_sent":"$body_bytes_sent",'
         '"request_time":"$request_time",'
         '"upstream_response_time":"$upstream_response_time",'
@@ -310,41 +122,46 @@ http {
         '"http_user_agent":"$http_user_agent"'
     '}';
     
+    # 应用日志格式
     server {
         access_log /var/log/nginx/access.log main;
     }
 }</pre>
                 </div>
 
-                <h3 class="section-subtitle">常用日志变量</h3>
+                <h3 class="section-subtitle">2.2 常用日志变量速查</h3>
                 <table class="info-table">
                     <thead>
-                        <tr><th>变量</th><th>说明</th><th>示例</th></tr>
+                        <tr><th>变量</th><th>说明</th><th>示例值</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>$remote_addr</code></td><td>客户端 IP</td><td><code>192.168.1.100</code></td></tr>
+                        <tr><td><code>$remote_addr</code></td><td>客户端 IP 地址</td><td><code>192.168.1.100</code></td></tr>
                         <tr><td><code>$time_local</code></td><td>本地时间</td><td><code>10/Feb/2025:14:30:25 +0800</code></td></tr>
-                        <tr><td><code>$request</code></td><td>完整请求</td><td><code>GET /api/users HTTP/1.1</code></td></tr>
+                        <tr><td><code>$request</code></td><td>完整请求行</td><td><code>GET /api/users HTTP/1.1</code></td></tr>
                         <tr><td><code>$status</code></td><td>响应状态码</td><td><code>200</code>, <code>404</code>, <code>500</code></td></tr>
-                        <tr><td><code>$body_bytes_sent</code></td><td>发送字节数</td><td><code>1234</code></td></tr>
-                        <tr><td><code>$request_time</code></td><td>请求处理时间</td><td><code>0.523</code> 秒</td></tr>
-                        <tr><td><code>$upstream_response_time</code></td><td>后端响应时间</td><td><code>0.489</code> 秒</td></tr>
-                        <tr><td><code>$upstream_connect_time</code></td><td>后端连接时间</td><td><code>0.002</code> 秒</td></tr>
-                        <tr><td><code>$http_referer</code></td><td>来源页面</td><td><code>https://example.com</code></td></tr>
-                        <tr><td><code>$http_user_agent</code></td><td>用户代理</td><td><code>Mozilla/5.0...</code></td></tr>
+                        <tr><td><code>$body_bytes_sent</code></td><td>发送给客户端的字节数</td><td><code>1234</code></td></tr>
+                        <tr><td><code>$request_time</code></td><td>请求处理总时间</td><td><code>0.523</code> 秒</td></tr>
+                        <tr><td><code>$upstream_connect_time</code></td><td>与后端建立连接时间</td><td><code>0.002</code> 秒</td></tr>
+                        <tr><td><code>$upstream_header_time</code></td><td>接收后端响应头时间</td><td><code>0.150</code> 秒</td></tr>
+                        <tr><td><code>$upstream_response_time</code></td><td>后端响应总时间</td><td><code>0.489</code> 秒</td></tr>
+                        <tr><td><code>$http_referer</code></td><td>来源页面 URL</td><td><code>https://example.com</code></td></tr>
+                        <tr><td><code>$http_user_agent</code></td><td>客户端 User-Agent</td><td><code>Mozilla/5.0...</code></td></tr>
+                        <tr><td><code>$http_x_forwarded_for</code></td><td>代理链路 IP</td><td><code>1.1.1.1, 2.2.2.2</code></td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第三部分：调试工具 -->
+        <section class="section" id="debug-tools">
             <div class="container">
-                <h2 class="section-title">🔧 调试技巧与方法</h2>
-                
-                <div class="debug-section">
-                    <h4>1. 实时查看日志</h4>
-                    <div class="config-example">
-                        <pre># 实时查看错误日志
+                <h2 class="section-title">🔧 三、调试工具与方法</h2>
+
+                <div class="grid grid-2">
+                    <div class="debug-section">
+                        <h4>📡 1. 实时查看日志</h4>
+                        <div class="config-example">
+                            <pre># 实时查看错误日志
 tail -f /var/log/nginx/error.log
 
 # 实时查看访问日志
@@ -353,44 +170,43 @@ tail -f /var/log/nginx/access.log
 # 同时查看多个日志
 tail -f /var/log/nginx/{error,access}.log
 
-# 显示行号
-tail -fn 100 /var/log/nginx/error.log | nl
+# 显示最近 100 行并实时跟踪
+tail -fn 100 /var/log/nginx/error.log
 
-# 高亮显示错误
-tail -f /var/log/nginx/error.log | grep --color=always -E 'error|crit|emerg'</pre>
+# 高亮显示错误级别
+tail -f /var/log/nginx/error.log | \
+  grep --color=always -E 'error|crit|emerg'</pre>
+                        </div>
                     </div>
-                </div>
 
-                <div class="debug-section">
-                    <h4>2. 日志分析命令</h4>
-                    <div class="config-example">
-                        <pre># 统计访问量最高的 10 个 IP
-awk '{print $1}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head -10
+                    <div class="debug-section">
+                        <h4>📊 2. 日志分析命令</h4>
+                        <div class="config-example">
+                            <pre># Top 10 访问 IP
+awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -10
 
-# 统计 HTTP 状态码分布
-awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c | sort -rn
+# 状态码分布
+awk '{print $9}' access.log | sort | uniq -c | sort -rn
 
 # 查找 5xx 错误
-awk '$9 ~ /^5[0-9]{2}$/' /var/log/nginx/access.log
+awk '$9 ~ /^5[0-9]{2}$/' access.log
 
-# 查找响应时间超过 1 秒的请求
-awk '($NF > 1) {print $0}' /var/log/nginx/access.log
+# 慢请求（>1 秒）
+awk '($NF > 1) {print $7, $NF"s"}' access.log
 
-# 统计每分钟的请求数
-awk -F'[' '{print $2}' /var/log/nginx/access.log | awk -F':' '{print $1":"$2":"$3}' | uniq -c
+# 统计每分钟请求数
+awk -F'[' '{print $2}' access.log | \
+  awk -F':' '{print $1":"$2":"$3}' | uniq -c
 
-# 查找特定 URL 的访问
-grep "/api/users" /var/log/nginx/access.log
-
-# 统计 User-Agent 分布
-awk -F'"' '{print $6}' /var/log/nginx/access.log | sort | uniq -c | sort -rn | head -10</pre>
+# 统计 User-Agent
+awk -F'"' '{print $6}' access.log | sort | uniq -c | sort -rn</pre>
+                        </div>
                     </div>
-                </div>
 
-                <div class="debug-section">
-                    <h4>3. 配置测试与验证</h4>
-                    <div class="config-example">
-                        <pre># 测试配置文件语法
+                    <div class="debug-section">
+                        <h4>✅ 3. 配置测试命令</h4>
+                        <div class="config-example">
+                            <pre># 测试配置文件语法
 nginx -t
 
 # 显示详细错误信息
@@ -399,21 +215,21 @@ nginx -t -V
 # 重新加载配置（不中断服务）
 nginx -s reload
 
-# 优雅关闭 Nginx
+# 优雅关闭（完成当前请求）
 nginx -s quit
 
 # 快速关闭
 nginx -s stop
 
-# 查看 Nginx 版本和编译参数
+# 查看版本和编译参数
 nginx -V</pre>
+                        </div>
                     </div>
-                </div>
 
-                <div class="debug-section">
-                    <h4>4. 调试模式配置</h4>
-                    <div class="config-example">
-                        <pre># 启用调试日志（需要 nginx 编译时启用 --with-debug）
+                    <div class="debug-section">
+                        <h4>🔬 4. 调试模式配置</h4>
+                        <div class="config-example">
+                            <pre># 启用调试日志（需--with-debug 编译）
 error_log /var/log/nginx/error.log debug;
 
 # 只记录特定客户端的调试信息
@@ -424,62 +240,57 @@ events {
 # 启用重写日志
 rewrite_log on;
 
-# 在 server 块中
+# 添加调试响应头
 server {
-    # 记录详细日志
-    error_log /var/log/nginx/debug.log debug;
-    
-    # 启用重写日志
-    rewrite_log on;
-    
     location / {
-        # 添加调试头
         add_header X-Request-ID $request_id;
         add_header X-Real-IP $remote_addr;
         add_header X-Request-Time $request_time;
     }
 }</pre>
-                    </div>
-                    <div class="warning-box">
-                        <strong>⚠️ 注意：</strong> 调试模式会产生大量日志，仅建议在测试环境或短时间内使用，生产环境使用后记得关闭。
+                        </div>
+                        <div class="warning-box">
+                            <strong>⚠️ 注意：</strong> 调试模式会产生大量日志，仅建议在测试环境使用
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第四部分：问题排查 -->
+        <section class="section bg-light" id="troubleshooting">
             <div class="container">
-                <h2 class="section-title">🐛 常见问题排查</h2>
-                
-                <h3 class="section-subtitle">问题排查流程</h3>
+                <h2 class="section-title">🐛 四、常见问题排查</h2>
+
+                <h3 class="section-subtitle">4.1 问题排查流程</h3>
                 <div class="timeline">
                     <div class="timeline-item">
-                        <h4>1. 确认问题现象</h4>
+                        <h4>Step 1: 确认问题现象</h4>
                         <p>记录错误信息、发生时间、影响范围、复现步骤</p>
                     </div>
                     <div class="timeline-item">
-                        <h4>2. 检查错误日志</h4>
+                        <h4>Step 2: 检查错误日志</h4>
                         <p>查看 <code>/var/log/nginx/error.log</code>，注意时间戳和错误级别</p>
                     </div>
                     <div class="timeline-item">
-                        <h4>3. 检查配置语法</h4>
+                        <h4>Step 3: 检查配置语法</h4>
                         <p>运行 <code>nginx -t</code> 验证配置文件</p>
                     </div>
                     <div class="timeline-item">
-                        <h4>4. 检查文件和目录权限</h4>
+                        <h4>Step 4: 检查权限</h4>
                         <p>确保 Nginx 用户有权限读取相关文件</p>
                     </div>
                     <div class="timeline-item">
-                        <h4>5. 检查后端服务</h4>
+                        <h4>Step 5: 检查后端服务</h4>
                         <p>确认 upstream 服务器正常运行</p>
                     </div>
                     <div class="timeline-item">
-                        <h4>6. 启用调试日志</h4>
+                        <h4>Step 6: 启用调试日志</h4>
                         <p>如问题仍未解决，启用 debug 级别日志详细分析</p>
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">常见错误及解决方案</h3>
+                <h3 class="section-subtitle">4.2 常见错误对照表</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>错误信息</th><th>可能原因</th><th>解决方案</th></tr>
@@ -488,190 +299,193 @@ server {
                         <tr>
                             <td><code>403 Forbidden</code></td>
                             <td>权限不足、index 文件不存在</td>
-                            <td>检查文件权限、确认 index 指令配置</td>
+                            <td>检查文件权限、确认 index 配置</td>
                         </tr>
                         <tr>
                             <td><code>404 Not Found</code></td>
-                            <td>文件不存在、root/alias 路径错误</td>
-                            <td>检查文件路径、确认 root/alias 配置</td>
+                            <td>文件不存在、路径配置错误</td>
+                            <td>检查文件路径、root/alias 配置</td>
                         </tr>
                         <tr>
                             <td><code>502 Bad Gateway</code></td>
-                            <td>后端服务未启动、连接被拒绝</td>
-                            <td>检查后端服务状态、确认 proxy_pass 地址</td>
+                            <td>后端服务未启动或连接失败</td>
+                            <td>检查后端状态、proxy_pass 地址</td>
                         </tr>
                         <tr>
                             <td><code>504 Gateway Timeout</code></td>
                             <td>后端响应超时</td>
-                            <td>增加 proxy_read_timeout、优化后端性能</td>
+                            <td>增加 proxy_read_timeout、优化后端</td>
                         </tr>
                         <tr>
-                            <td><code>connect() failed (111: Connection refused)</code></td>
-                            <td>后端服务未监听指定端口</td>
-                            <td>检查后端服务是否运行、端口是否正确</td>
+                            <td><code>Connection refused (111)</code></td>
+                            <td>后端未监听指定端口</td>
+                            <td>检查后端服务、端口配置</td>
                         </tr>
                         <tr>
                             <td><code>permission denied</code></td>
                             <td>文件/目录权限不足</td>
-                            <td>修改文件权限、检查 SELinux/AppArmor</td>
+                            <td>修改权限、检查 SELinux</td>
                         </tr>
                         <tr>
-                            <td><code>open() failed (2: No such file or directory)</code></td>
+                            <td><code>No such file or directory</code></td>
                             <td>文件不存在</td>
-                            <td>检查文件路径、确认文件确实存在</td>
+                            <td>检查路径、确认文件存在</td>
                         </tr>
                         <tr>
-                            <td><code>upstream prematurely closed connection</code></td>
-                            <td>后端服务崩溃或主动关闭连接</td>
-                            <td>检查后端日志、增加后端资源</td>
+                            <td><code>upstream closed connection</code></td>
+                            <td>后端崩溃或主动关闭</td>
+                            <td>检查后端日志、增加资源</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第五部分：分析工具 -->
+        <section class="section" id="analysis-tools">
             <div class="container">
-                <h2 class="section-title">📈 日志分析工具</h2>
-                
-                <h3 class="section-subtitle">GoAccess（实时分析）</h3>
-                <div class="config-example">
-                    <pre># 安装 GoAccess
-# Ubuntu/Debian
+                <h2 class="section-title">📈 五、日志分析工具</h2>
+
+                <div class="grid grid-3">
+                    <div class="card card-primary">
+                        <h4>🔵 GoAccess</h4>
+                        <p>实时终端日志分析工具</p>
+                        <div class="config-example">
+                            <pre># 安装
 sudo apt-get install goaccess
 
-# CentOS/RHEL
-sudo yum install goaccess
-
-# 生成实时 HTML 报告
-goaccess /var/log/nginx/access.log -o /var/www/html/report.html --log-format=COMBINED
-
 # 终端界面
-goaccess /var/log/nginx/access.log --log-format=COMBINED
+goaccess access.log
 
-# 自定义日志格式
-goaccess /var/log/nginx/access.log \
-  --log-format='%h %^[%d:%t %^] "%r" %s %b "%R" "%u" %D' \
-  --date-format=%d/%b/%Y \
-  --time-format=%H:%M:%S</pre>
-                </div>
+# HTML 报告
+goaccess access.log \
+  -o report.html \
+  --log-format=COMBINED</pre>
+                        </div>
+                    </div>
 
-                <h3 class="section-subtitle">AWStats（统计分析）</h3>
-                <div class="config-example">
-                    <pre># 安装 AWStats
+                    <div class="card card-primary">
+                        <h4>📊 AWStats</h4>
+                        <p>统计分析工具</p>
+                        <div class="config-example">
+                            <pre># 安装
 sudo apt-get install awstats
 
-# 配置
-sudo vim /etc/awstats/awstats.conf
-
-# 设置日志路径
-LogFile="/var/log/nginx/access.log"
-LogFormat=1
+# 更新数据
+awstats.pl -config=mysite -update
 
 # 生成报告
-sudo /usr/lib/cgi-bin/awstats.pl -config=mysite -update
-sudo /usr/lib/cgi-bin/awstats.pl -config=mysite -show</pre>
-                </div>
+awstats.pl -config=mysite -show</pre>
+                        </div>
+                    </div>
 
-                <h3 class="section-subtitle">ELK Stack（企业级）</h3>
-                <div class="config-example">
-                    <pre># Filebeat 配置（发送日志到 Elasticsearch）
-sudo vim /etc/filebeat/filebeat.yml
-
+                    <div class="card card-primary">
+                        <h4>🏗️ ELK Stack</h4>
+                        <p>企业级日志平台</p>
+                        <div class="config-example">
+                            <pre># Filebeat 配置
 filebeat.inputs:
 - type: log
-  enabled: true
   paths:
-    - /var/log/nginx/access.log
-    - /var/log/nginx/error.log
-  fields:
-    type: nginx
+    - /var/log/nginx/*.log
 
 output.elasticsearch:
-  hosts: ["localhost:9200"]
-  indices:
-    - index: "nginx-access-%{+yyyy.MM.dd}"
-    - index: "nginx-error-%{+yyyy.MM.dd}"
-
-# 启动 Filebeat
-sudo systemctl start filebeat</pre>
+  hosts: ["localhost:9200"]</pre>
+                        </div>
+                    </div>
                 </div>
 
-                <h3 class="section-subtitle">简单脚本分析</h3>
+                <h3 class="section-subtitle">快速分析脚本</h3>
                 <div class="config-example">
                     <pre>#!/bin/bash
-# nginx-analyze.sh - 简单日志分析脚本
+# nginx-analyze.sh - 快速日志分析
 
-LOG_FILE="/var/log/nginx/access.log"
+LOG="/var/log/nginx/access.log"
 
 echo "=== Nginx 日志分析 ==="
-echo "日志文件：$LOG_FILE"
-echo ""
-
-echo "【总请求数】"
-wc -l < $LOG_FILE
-
+echo "总请求数：$(wc -l < $LOG)"
 echo ""
 echo "【状态码分布】"
-awk '{print $9}' $LOG_FILE | sort | uniq -c | sort -rn
-
+awk '{print $9}' $LOG | sort | uniq -c | sort -rn
 echo ""
 echo "【Top 10 IP】"
-awk '{print $1}' $LOG_FILE | sort | uniq -c | sort -rn | head -10
-
+awk '{print $1}' $LOG | sort | uniq -c | sort -rn | head -10
 echo ""
-echo "【Top 10 请求 URL】"
-awk '{print $7}' $LOG_FILE | sort | uniq -c | sort -rn | head -10
-
+echo "【Top 10 URL】"
+awk '{print $7}' $LOG | sort | uniq -c | sort -rn | head -10
 echo ""
-echo "【慢请求（>1 秒）】"
-awk '($NF > 1) {print $7, $NF"s"}' $LOG_FILE | sort -t's' -k2 -rn | head -10</pre>
+echo "【慢请求 Top 10】"
+awk '($NF > 1) {print $7, $NF"s"}' $LOG | sort -t's' -k2 -rn | head -10</pre>
                 </div>
             </div>
         </section>
 
-        <section class="section">
+        <!-- 第六部分：检查清单 -->
+        <section class="section bg-light" id="checklist">
             <div class="container">
                 <h2 class="section-title">✅ 调试检查清单</h2>
-                
-                <ul class="checklist">
-                    <li>确认 Nginx 服务正在运行 (<code>systemctl status nginx</code>)</li>
-                    <li>检查配置文件语法 (<code>nginx -t</code>)</li>
-                    <li>查看错误日志中的最新错误</li>
-                    <li>确认监听端口正确 (<code>netstat -tlnp | grep nginx</code>)</li>
-                    <li>检查防火墙规则 (<code>iptables -L</code> 或 <code>ufw status</code>)</li>
-                    <li>验证 SSL 证书路径和权限（如使用 HTTPS）</li>
-                    <li>检查 upstream 服务器是否可达</li>
-                    <li>确认文件和目录权限正确</li>
-                    <li>检查磁盘空间 (<code>df -h</code>)</li>
-                    <li>查看系统资源使用情况 (<code>top</code>, <code>free -m</code>)</li>
-                    <li>测试 DNS 解析 (<code>nslookup</code> 或 <code>dig</code>)</li>
-                    <li>使用 <code>curl -v</code> 测试请求并查看详细响应</li>
-                </ul>
+
+                <div class="grid grid-2">
+                    <div>
+                        <h3 class="section-subtitle">服务状态检查</h3>
+                        <ul class="checklist">
+                            <li>Nginx 服务运行中 (<code>systemctl status nginx</code>)</li>
+                            <li>配置文件语法正确 (<code>nginx -t</code>)</li>
+                            <li>监听端口正确 (<code>netstat -tlnp | grep nginx</code>)</li>
+                            <li>Worker 进程正常 (<code>ps aux | grep nginx</code>)</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="section-subtitle">日志检查</h3>
+                        <ul class="checklist">
+                            <li>查看最新错误日志</li>
+                            <li>检查日志级别设置</li>
+                            <li>确认日志文件可写</li>
+                            <li>检查磁盘空间 (<code>df -h</code>)</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="section-subtitle">网络检查</h3>
+                        <ul class="checklist">
+                            <li>防火墙规则正确</li>
+                            <li>upstream 服务器可达</li>
+                            <li>DNS 解析正常</li>
+                            <li>SSL 证书有效</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="section-subtitle">系统检查</h3>
+                        <ul class="checklist">
+                            <li>文件权限正确</li>
+                            <li>系统资源充足 (<code>top</code>, <code>free -m</code>)</li>
+                            <li>连接数未超限</li>
+                            <li>SELinux/AppArmor 配置</li>
+                        </ul>
+                    </div>
+                </div>
 
                 <div class="tip-box">
-                    <strong>💡 调试命令汇总：</strong>
-                    <pre>
-# 服务状态
-systemctl status nginx
+                    <strong>💡 常用调试命令速查：</strong>
+                    <div class="config-example" style="margin-top: 15px;">
+                        <pre># 服务管理
+systemctl status nginx    # 查看状态
+systemctl restart nginx   # 重启
+systemctl reload nginx    # 重载配置
 
 # 配置测试
-nginx -t
+nginx -t                  # 测试配置
 
-# 重新加载
-nginx -s reload
-
-# 查看监听端口
-netstat -tlnp | grep nginx
-
-# 实时日志
+# 日志查看
 tail -f /var/log/nginx/error.log
+tail -f /var/log/nginx/access.log
 
-# 连接测试
-curl -v http://localhost/
-
-# 性能测试
-ab -n 1000 -c 100 http://localhost/</pre>
+# 网络测试
+curl -v http://localhost/           # 详细请求
+ab -n 1000 -c 100 http://localhost/ # 压力测试</pre>
+                    </div>
                 </div>
             </div>
         </section>
