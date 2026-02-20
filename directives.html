@@ -147,6 +147,71 @@
                         <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server, location</td><td>长连接超时</td></tr>
                     </tbody>
                 </table>
+
+                <h3 class="section-subtitle">连接限制指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>limit_conn</code></td><td>-</td><td>http, server, location</td><td>限制连接数</td></tr>
+                        <tr><td><code>limit_req</code></td><td>-</td><td>http, server, location</td><td>限制请求速率</td></tr>
+                        <tr><td><code>limit_conn_zone</code><td>-</td><td>http</td><td>定义连接限制空间</td></tr>
+                        <tr><td><code>limit_req_zone</code><td>-</td><td>http</td><td>定义请求限制空间</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">文件上传指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>client_max_body_size</code><td>1m</td><td>http, server, location</td><td>最大请求体大小</td></tr>
+                        <tr><td><code>client_body_buffer_size</code><td>8k/16k</td><td>http, server, location</td><td>请求体缓冲区大小</td></tr>
+                        <tr><td><code>client_body_timeout</code><td>60</td><td>http, server, location</td><td>请求体读取超时</td></tr>
+                        <tr><td><code>client_header_timeout</code><td>60</td><td>http, server, location</td><td>请求头读取超时</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">变量相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>set</code></td><td>-</td><td>server, location, if</td><td>定义变量</td></tr>
+                        <tr><td><code>map</code></td><td>-</td><td>http</td><td>创建变量映射</td></tr>
+                        <tr><td><code>geo</code></td><td>-</td><td>http</td><td>基于IP定义变量</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">缓冲相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_buffering</code><td>on</td><td>http, server, location</td><td>启用代理缓冲</td></tr>
+                        <tr><td><code>proxy_buffers</code><td>8 4k/8k</td><td>http, server, location</td><td>代理缓冲区数量和大小</td></tr>
+                        <tr><td><code>proxy_buffer_size</code><td>4k/8k</td><td>http, server, location</td><td>代理缓冲区大小</td></tr>
+                        <tr><td><code>fastcgi_buffering</code><td>on</td><td>http, server, location</td><td>启用FastCGI缓冲</td></tr>
+                        <tr><td><code>fastcgi_buffers</code><td>8 4k/8k</td><td>http, server, location</td><td>FastCGI缓冲区</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">重定向指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>redirect</code></td><td>-</td><td>location</td><td>302临时重定向</td></tr>
+                        <tr><td><code>permanent</code></td><td>-</td><td>location</td><td>301永久重定向</td></tr>
+                        <tr><td><code>rewrite</code></td><td>-</td><td>server, location</td><td>URL重写</td></tr>
+                        <tr><td><code>error_page</code></td><td>-</td><td>http, server, location</td><td>自定义错误页面</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
     </main>
@@ -210,6 +275,72 @@
                         <tr><td><code>X-Real-IP $remote_addr</code></td><td>传递客户端真实IP</td></tr>
                         <tr><td><code>X-Forwarded-For $proxy_add_x_forwarded_for</code></td><td>传递代理链路</td></tr>
                         <tr><td><code>X-Forwarded-Proto $scheme</code></td><td>传递原始协议</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">gzip 常用参数值</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>参数</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>gzip_types text/plain text/css application/json</code></td><td>指定压缩类型</td></tr>
+                        <tr><td><code>gzip_min_length 1000</code></td><td>最小压缩文件大小</td></tr>
+                        <tr><td><code>gzip_disable "msie6"</code></td><td>禁用特定浏览器压缩</td></tr>
+                        <tr><td><code>gzip_proxied any</code></td><td>对代理响应压缩</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">upstream server 参数值</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>参数</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>weight=3</code></td><td>权重值</td></tr>
+                        <tr><td><code>max_fails=3</code></td><td>最大失败次数</td></tr>
+                        <tr><td><code>fail_timeout=30s</code></td><td>失败超时时间</td></tr>
+                        <tr><td><code>backup</code></td><td>备份服务器</td></tr>
+                        <tr><td><code>down</code></td><td>标记服务器离线</td></tr>
+                        <tr><td><code>max_conns=100</code></td><td>最大连接数</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">常用变量</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>变量</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>$remote_addr</code></td><td>客户端IP地址</td></tr>
+                        <tr><td><code>$remote_user</code></td><td>客户端用户名</td></tr>
+                        <tr><td><code>$request_uri</code></td><td>完整的请求URI</td></tr>
+                        <tr><td><code>$request_method</code></td><td>请求方法</td></tr>
+                        <tr><td><code>$http_user_agent</code></td><td>客户端User-Agent</td></tr>
+                        <tr><td><code>$http_referer</code></td><td>来源页面</td></tr>
+                        <tr><td><code>$scheme</code></td><td>请求协议(http/https)</td></tr>
+                        <tr><td><code>$server_port</code></td><td>服务器端口</td></tr>
+                        <tr><td><code>$host</code></td><td>请求主机名</td></tr>
+                        <tr><td><code>$request_time</code></td><td>请求处理时间</td></tr>
+                        <tr><td><code>$status</code></td><td>响应状态码</td></tr>
+                        <tr><td><code>$body_bytes_sent</code></td><td>发送字节数</td></tr>
+                        <tr><td><code>$upstream_addr</code></td><td>后端服务器地址</td></tr>
+                        <tr><td><code>$upstream_status</code></td><td>后端响应状态</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">SSL 常用配置</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>参数</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>ssl_session_cache shared:SSL:10m</code></td><td>SSL会话缓存</td></tr>
+                        <tr><td><code>ssl_session_timeout 1d</code></td><td>SSL会话超时</td></tr>
+                        <tr><td><code>ssl_prefer_server_ciphers on</code></td><td>优先使用服务器加密套件</td></tr>
+                        <tr><td><code>ssl_ciphers HIGH:!aNULL:!MD5</code></td><td>加密套件列表</td></tr>
+                        <tr><td><code>ssl_stapling on</code></td><td>启用OCSP装订</td></tr>
+                        <tr><td><code>ssl_stapling_verify on</code></td><td>验证OCSP响应</td></tr>
                     </tbody>
                 </table>
             </div>
