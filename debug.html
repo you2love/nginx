@@ -100,48 +100,6 @@
             color: white;
             transform: translateY(-3px);
         }
-        .debug-workflow {
-            position: relative;
-            padding: 30px;
-            background: var(--bg-light);
-            border-radius: var(--radius-lg);
-            margin: 25px 0;
-        }
-        .workflow-step {
-            display: flex;
-            align-items: center;
-            margin: 20px 0;
-            padding: 20px;
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-        }
-        .workflow-number {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 700;
-            flex-shrink: 0;
-            margin-right: 20px;
-        }
-        .workflow-content {
-            flex: 1;
-        }
-        .workflow-content h4 {
-            margin: 0 0 8px 0;
-            color: var(--primary-color);
-        }
-        .workflow-content p {
-            margin: 0;
-            color: var(--text-light);
-            font-size: 14px;
-        }
         .error-matrix {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -479,59 +437,94 @@
         <section class="section" id="debug-workflow">
             <div class="container">
                 <h2 class="section-title">🔧 三、调试工作流</h2>
-                
-                <div class="debug-workflow">
-                    <div class="workflow-step">
-                        <div class="workflow-number">1</div>
-                        <div class="workflow-content">
-                            <h4>实时查看日志</h4>
-                            <p>使用 <code>tail -f</code> 实时监控日志输出</p>
-                        </div>
+
+                <style>
+                    .workflow-compact {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        padding: 20px;
+                        background: var(--bg-light);
+                        border-radius: var(--radius-lg);
+                        margin: 20px 0;
+                    }
+                    .workflow-step-compact {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 10px 15px;
+                        background: var(--white);
+                        border-radius: var(--radius);
+                        box-shadow: var(--shadow-sm);
+                        min-width: 100px;
+                    }
+                    .workflow-step-compact .num {
+                        width: 28px;
+                        height: 28px;
+                        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+                        color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        font-weight: 700;
+                        flex-shrink: 0;
+                    }
+                    .workflow-step-compact .text {
+                        font-size: 13px;
+                        font-weight: 500;
+                    }
+                    .workflow-arrow-compact {
+                        color: var(--primary-color);
+                        font-size: 18px;
+                        font-weight: bold;
+                    }
+                </style>
+
+                <div class="workflow-compact">
+                    <div class="workflow-step-compact">
+                        <span class="num">1</span>
+                        <span class="text">实时查看日志</span>
                     </div>
-                    <div class="workflow-step">
-                        <div class="workflow-number">2</div>
-                        <div class="workflow-content">
-                            <h4>识别错误模式</h4>
-                            <p>查找重复出现的错误信息和时间规律</p>
-                        </div>
+                    <span class="workflow-arrow-compact">→</span>
+                    <div class="workflow-step-compact">
+                        <span class="num">2</span>
+                        <span class="text">识别错误模式</span>
                     </div>
-                    <div class="workflow-step">
-                        <div class="workflow-number">3</div>
-                        <div class="workflow-content">
-                            <h4>分析根本原因</h4>
-                            <p>根据错误类型定位问题源头</p>
-                        </div>
+                    <span class="workflow-arrow-compact">→</span>
+                    <div class="workflow-step-compact">
+                        <span class="num">3</span>
+                        <span class="text">分析根本原因</span>
                     </div>
-                    <div class="workflow-step">
-                        <div class="workflow-number">4</div>
-                        <div class="workflow-content">
-                            <h4>实施解决方案</h4>
-                            <p>修改配置或优化代码</p>
-                        </div>
+                    <span class="workflow-arrow-compact">→</span>
+                    <div class="workflow-step-compact">
+                        <span class="num">4</span>
+                        <span class="text">实施解决方案</span>
                     </div>
-                    <div class="workflow-step">
-                        <div class="workflow-number">5</div>
-                        <div class="workflow-content">
-                            <h4>验证修复效果</h4>
-                            <p>观察日志确认问题已解决</p>
-                        </div>
+                    <span class="workflow-arrow-compact">→</span>
+                    <div class="workflow-step-compact">
+                        <span class="num">5</span>
+                        <span class="text">验证修复效果</span>
                     </div>
                 </div>
 
-                <h3 class="section-subtitle">常用调试命令流程图</h3>
+                <h3 class="section-subtitle" style="margin-top: 25px;">常用调试命令流程</h3>
                 <div class="flow-container">
                     <div class="flow-diagram">
                         <div class="flow-box">发现问题</div>
                         <div class="flow-arrow">→</div>
-                        <div class="flow-box">nginx -t<br>测试配置</div>
+                        <div class="flow-box">nginx -t<br><small>测试配置</small></div>
                         <div class="flow-arrow">→</div>
-                        <div class="flow-box">tail -f<br>查看日志</div>
+                        <div class="flow-box">tail -f<br><small>查看日志</small></div>
                         <div class="flow-arrow">→</div>
                         <div class="flow-box">分析原因</div>
                         <div class="flow-arrow">→</div>
                         <div class="flow-box">修改配置</div>
                         <div class="flow-arrow">→</div>
-                        <div class="flow-box">nginx -s reload<br>重载配置</div>
+                        <div class="flow-box">nginx -s reload<br><small>重载配置</small></div>
                         <div class="flow-arrow">→</div>
                         <div class="flow-box">验证结果</div>
                     </div>
