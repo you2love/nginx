@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 内部机制 - 架构与设计</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link active">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h1 class="page-title">Nginx 内部机制</h1>
+                <p class="page-intro">深入理解Nginx的架构设计、模块系统和事件驱动模型</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Nginx 深度学习 - 揭秘内部机制，掌握核心配置</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 应用配置 - 实战场景详解</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link active">应用配置</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h1 class="page-title">Nginx 应用配置</h1>
+                <p class="page-intro">实战场景中的Nginx配置最佳实践</p>
+            </div>
+        </section>
+
+        <section class="section bg-light">
+            <div class="container">
+                <h2 class="section-title">负载均衡策略</h2>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>策略</th><th>说明</th><th>配置示例</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>轮询</td><td>默认策略，按顺序分配</td><td>无额外配置</td></tr>
+                        <tr><td>权重</td><td>按比例分配请求</td><td>server 192.168.1.1 weight=3</td></tr>
+                        <tr><td>IP哈希</td><td>根据客户端IP分配</td><td>ip_hash;</td></tr>
+                        <tr><td>最少连接</td><td>分配给连接数最少的服务器</td><td>least_conn;</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

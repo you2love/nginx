@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 指令详解 - 核心配置指南</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link active">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h1 class="page-title">Nginx 指令详解</h1>
+                <p class="page-intro">全面掌握Nginx核心指令及其使用场景</p>
+            </div>
+        </section>
+
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">最常用指令详解</h2>
+                
+                <h3 class="section-subtitle">核心配置指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>worker_processes</code></td><td>1</td><td>main</td><td>Worker进程数量，通常设为CPU核心数</td></tr>
+                        <tr><td><code>worker_connections</code></td><td>1024</td><td>events</td><td>每个Worker的最大连接数</td></tr>
+                        <tr><td><code>daemon</code></td><td>on</td><td>main</td><td>是否以守护进程运行</td></tr>
+                        <tr><td><code>error_log</code></td><td>logs/error.log</td><td>main, http, server, location</td><td>错误日志路径和级别</td></tr>
+                        <tr><td><code>pid</code></td><td>logs/nginx.pid</td><td>main</td><td>主进程PID文件路径</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">HTTP核心指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>server</code></td><td>-</td><td>http</td><td>定义虚拟服务器</td></tr>
+                        <tr><td><code>location</code></td><td>-</td><td>server, location</td><td>匹配请求URI</td></tr>
+                        <tr><td><code>listen</code><td>80</td><td>server</td><td>监听端口和地址</td></tr>
+                        <tr><td><code>server_name</code><td>""</td><td>server</td><td>虚拟主机名</td></tr>
+                        <tr><td><code>root</code></td><td>html</td><td>http, server, location</td><td>网站根目录</td></tr>
+                        <tr><td><code>index</code><td>index.html</td><td>http, server, location</td><td>默认首页文件</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">代理相关指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_pass</code></td><td>-</td><td>location, if in location</td><td>代理服务器地址</td></tr>
+                        <tr><td><code>proxy_set_header</code></td><td>-</td><td>http, server, location</td><td>设置代理请求头</td></tr>
+                        <tr><td><code>proxy_connect_timeout</code></td><td>60s</td><td>http, server, location</td><td>连接超时时间</td></tr>
+                        <tr><td><code>proxy_read_timeout</code></td><td>60s</td><td>http, server, location</td><td>读取超时时间</td></tr>
+                        <tr><td><code>proxy_send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送超时时间</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">缓存指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_cache</code></td><td>off</td><td>http, server, location</td><td>启用代理缓存</td></tr>
+                        <tr><td><code>proxy_cache_path</code></td><td>-</td><td>http</td><td>定义缓存路径和参数</td></tr>
+                        <tr><td><code>proxy_cache_valid</code><td>-</td><td>http, server, location</td><td>缓存有效时间</td></tr>
+                        <tr><td><code>expires</code><td>off</td><td>http, server, location</td><td>缓存过期时间</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">负载均衡指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>upstream</code><td>-</td><td>http</td><td>定义后端服务器组</td></tr>
+                        <tr><td><code>server</code><td>-</td><td>upstream</td><td>定义后端服务器</td></tr>
+                        <tr><td><code>least_conn</code><td>-</td><td>upstream</td><td>最少连接策略</td></tr>
+                        <tr><td><code>ip_hash</code><td>-</td><td>upstream</td><td>IP哈希策略</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

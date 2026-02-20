@@ -676,6 +676,234 @@ body {
     }
 }
 
+
+/* Learning Path */
+.learning-path {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 40px 0;
+}
+
+.path-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    max-width: 280px;
+}
+
+.path-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.step-content h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.step-content p {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.path-arrow {
+    font-size: 32px;
+    color: var(--primary-color);
+    opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+    .path-arrow {
+        transform: rotate(90deg);
+    }
+    .learning-path {
+        flex-direction: column;
+    }
+}
+
+/* Concepts Grid */
+.concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+.concept-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.concept-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.concept-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.concept-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.concept-card p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Page Title */
+.page-title {
+    font-size: 42px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.page-intro {
+    font-size: 18px;
+    text-align: center;
+    color: var(--text-light);
+    max-width: 800px;
+    margin: 0 auto 40px;
+}
+
+/* Chart Containers */
+.chart-container {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 30px 0;
+    box-shadow: var(--shadow);
+}
+
+.chart-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--bg-light);
+    padding-bottom: 10px;
+}
+
+/* Table Styles */
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.info-table thead {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.info-table th,
+.info-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.info-table tbody tr:hover {
+    background: var(--bg-light);
+}
+
+/* Flowchart SVG */
+.flowchart-container {
+    text-align: center;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.flowchart-node {
+    fill: var(--bg-light);
+    stroke: var(--primary-color);
+    stroke-width: 2;
+}
+
+.flowchart-node text {
+    fill: var(--text-color);
+    font-size: 14px;
+}
+
+.flowchart-arrow {
+    stroke: var(--primary-color);
+    stroke-width: 2;
+    fill: none;
+    marker-end: url(#arrowhead);
+}
+
+/* Section Subtitle */
+.section-subtitle {
+    font-size: 24px;
+    margin: 40px 0 20px;
+    color: var(--text-color);
+    position: relative;
+    padding-left: 20px;
+}
+
+.section-subtitle::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 4px;
+    height: 24px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Diagram Box */
+.diagram-box {
+    background: var(--bg-light);
+    border: 2px dashed var(--text-light);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.diagram-box h4 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
 /* Smooth Scrolling */
 html {
     scroll-behavior: smooth;

@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nginx - AI时代的高性能Web服务器</title>
+    <title>Nginx 深度学习 - 内部机制与配置详解</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="logo">
-                <h1>Nginx</h1>
-                <p class="tagline">AI时代的高性能Web服务器</p>
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
             </div>
             <nav class="nav">
                 <a href="index.html" class="nav-link active">首页</a>
-                <a href="commands.html" class="nav-link">指令与配置</a>
-                <a href="ai-tools.html" class="nav-link ai-highlight">AI工具</a>
-                <a href="practice.html" class="nav-link">实战篇</a>
-                <a href="resources.html" class="nav-link">学习资源</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
             </nav>
         </div>
     </header>
@@ -27,28 +27,11 @@
         <section class="hero section">
             <div class="container">
                 <div class="hero-content">
-                    <h2>Nginx 教程<br><span class="gradient-text">AI时代的高性能Web服务器</span></h2>
-                    <p>掌握Nginx核心指令、配置语法和最佳实践，构建高性能Web服务</p>
+                    <h2>Nginx 深度学习</h2>
+                    <p class="hero-subtitle">从内部机制到实战配置，全面掌握高性能Web服务器</p>
                     <div class="cta-buttons">
-                        <a href="commands.html" class="btn btn-primary">开始学习</a>
-                        <a href="practice.html" class="btn btn-secondary">查看实战</a>
-                    </div>
-                </div>
-                <div class="hero-features">
-                    <div class="feature-card">
-                        <div class="feature-icon">📖</div>
-                        <h3>60+ 指令详解</h3>
-                        <p>全面覆盖Nginx核心指令</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚙️</div>
-                        <h3>配置示例</h3>
-                        <p>实际配置文件，即学即用</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
-                        <h3>最佳实践</h3>
-                        <p>生产环境经验总结</p>
+                        <a href="mechanism.html" class="btn btn-primary">学习内部机制</a>
+                        <a href="request-flow.html" class="btn btn-secondary">查看请求流程</a>
                     </div>
                 </div>
             </div>
@@ -57,36 +40,74 @@
         <section class="section">
             <div class="container">
                 <h2 class="section-title">学习路径</h2>
-                <div class="content-grid">
-                    <div class="content-card">
-                        <h3>💻 指令与配置</h3>
-                        <p>掌握Nginx核心指令和配置语法，包含60+个常用指令和100+个变量的详细说明</p>
-                        <a href="commands.html" class="btn-link">开始学习 →</a>
+                <div class="learning-path">
+                    <div class="path-item step1">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>内部机制</h3>
+                            <p>理解架构、模块、事件驱动模型</p>
+                            <a href="mechanism.html" class="btn-link">开始学习 →</a>
+                        </div>
                     </div>
-                    <div class="content-card">
-                        <h3>🤖 AI工具</h3>
-                        <p>探索与Nginx相关的AI工具，包括配置生成、性能监控、安全分析等</p>
-                        <a href="ai-tools.html" class="btn-link">查看工具 →</a>
+                    <div class="path-arrow">→</div>
+                    <div class="path-item step2">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>请求处理流程</h3>
+                            <p>掌握完整的请求生命周期</p>
+                            <a href="request-flow.html" class="btn-link">查看流程 →</a>
+                        </div>
                     </div>
-                    <div class="content-card">
-                        <h3>🎯 实战篇</h3>
-                        <p>学习实际场景中的Nginx配置，包括最佳实践和实战案例</p>
-                        <a href="practice.html" class="btn-link">查看实战 →</a>
+                    <div class="path-arrow">→</div>
+                    <div class="path-item step3">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>指令详解</h3>
+                            <p>核心指令分类与使用场景</p>
+                            <a href="directives.html" class="btn-link">学习指令 →</a>
+                        </div>
                     </div>
-                    <div class="content-card">
-                        <h3>📚 学习资源</h3>
-                        <p>官方文档、GitHub项目、视频教程等学习资源汇总</p>
-                        <a href="resources.html" class="btn-link">查看资源 →</a>
+                    <div class="path-arrow">→</div>
+                    <div class="path-item step4">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>应用配置</h3>
+                            <p>实战场景最佳实践</p>
+                            <a href="configs.html" class="btn-link">查看配置 →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section bg-light">
+            <div class="container">
+                <h2 class="section-title">核心概念预览</h2>
+                <div class="concepts-grid">
+                    <div class="concept-card">
+                        <div class="concept-icon">🏗️</div>
+                        <h3>Master-Worker架构</h3>
+                        <p>多进程模型，充分利用多核CPU，稳定性与高性能并重</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-icon">⚡</div>
+                        <h3>事件驱动模型</h3>
+                        <p>基于epoll/kqueue的高效I/O多路复用，支持数万并发连接</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-icon">🔄</div>
+                        <h3>11个处理阶段</h3>
+                        <p>完整的请求处理流水线，每个阶段都有明确的职责</p>
+                    </div>
+                    <div class="concept-card">
+                        <div class="concept-icon">📦</div>
+                        <h3>模块化设计</h3>
+                        <p>核心模块与第三方模块分离，灵活扩展功能</p>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <p>Nginx教程 - AI时代的高性能Web服务器</p>
-        </div>
-    </footer>
 </body>
 </html>
