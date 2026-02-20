@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 插件系统 - 第三方模块指南</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .plugin-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+        .plugin-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .plugin-card h3 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .plugin-rank {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .plugin-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .plugin-tag {
+            padding: 4px 12px;
+            background: #e8eaf6;
+            color: #5c6bc0;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .plugin-tag.official {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .plugin-tag.community {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .plugin-card p {
+            color: #555;
+            line-height: 1.9;
+            margin: 15px 0;
+        }
+        .install-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .install-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .install-section code {
+            display: block;
+            background: #2d3748;
+            color: #68d391;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .feature-list li {
+            padding: 10px 15px;
+            background: #f0f4ff;
+            border-radius: 6px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        .feature-list li::before {
+            content: '✓';
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .config-example {
+            background: #1e1e2e;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .config-example h4 {
+            margin: 0 0 15px 0;
+            color: #a6accd;
+        }
+        .config-example pre {
+            margin: 0;
+            color: #a6accd;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+        .config-example .keyword { color: #bb9af7; }
+        .config-example .directive { color: #7aa2f7; }
+        .config-example .value { color: #9ece6a; }
+        .config-example .comment { color: #565f89; }
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+        .warning-box strong {
+            color: #e65100;
+        }
+        .tip-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+        .tip-box strong {
+            color: #2e7d32;
+        }
+        .plugin-category {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin: 40px 0 25px 0;
+        }
+        .plugin-category h3 {
+            margin: 0;
+            color: white;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e8eaed;
+        }
+        .comparison-table th {
+            background: #546e7a;
+            color: white;
+            font-weight: 600;
+        }
+        .comparison-table tr:hover {
+            background: #f5f5f5;
+        }
+        .stars {
+            color: #ffc107;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+                <a href="debug.html" class="nav-link">日志调试</a>
+                <a href="tools.html" class="nav-link">周边工具</a>
+                <a href="modules.html" class="nav-link active">插件系统</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🔌 Nginx 插件系统</h2>
+                <p class="page-intro">
+                    Nginx 拥有丰富的模块生态系统，包括官方模块和第三方模块。
+                    第三方模块可以扩展 Nginx 的功能，满足各种特殊需求。
+                    本页面按知名度从高到低介绍常用的第三方模块。
+                </p>
+
+                <div class="warning-box">
+                    <strong>⚠️ 注意事项：</strong>
+                    <ul style="margin: 10px 0 0 20px; line-height: 2;">
+                        <li>第三方模块需要重新编译 Nginx，无法通过包管理器直接安装</li>
+                        <li>使用前请确认模块与 Nginx 版本的兼容性</li>
+                        <li>生产环境使用前建议充分测试</li>
+                    </ul>
+                </div>
+
+                <!-- 第一类：热门模块 -->
+                <div class="plugin-category">
+                    <h3>🔥 热门模块（知名度 ★★★★★）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ngx_lua (OpenResty)
+                        <span class="plugin-rank">🥇 NO.1</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 脚本</span>
+                        <span class="plugin-tag">高性能</span>
+                    </div>
+                    <p>
+                        <strong>OpenResty</strong> 是基于 Nginx 和 LuaJIT 的 Web 平台，核心是 ngx_lua 模块。
+                        它允许在 Nginx 中直接编写 Lua 脚本，实现复杂的业务逻辑，无需重启服务器即可更新代码。
+                        被 Cloudflare、GitHub 等大公司广泛使用。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <p>推荐直接安装 OpenResty（已集成 ngx_lua）：</p>
+                        <code># Ubuntu/Debian
+wget -O - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
+sudo apt-add-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
+sudo apt update
+sudo apt install -y openresty
+
+# 或使用 Docker
+docker pull openresty/openresty</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>在 Nginx 中运行 Lua 脚本</li>
+                        <li>极高的性能（LuaJIT 编译）</li>
+                        <li>丰富的 API 和生态</li>
+                        <li>热代码加载</li>
+                        <li>协程支持</li>
+                        <li>非阻塞 I/O</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">location</span> <span class="value">/hello</span> {
+    <span class="directive">content_by_lua_block</span> {
+        ngx.say(<span class="value">"Hello, Lua!"</span>)
+    }
+}
+
+<span class="keyword">location</span> <span class="value">/api</span> {
+    <span class="directive">content_by_lua_block</span> {
+        <span class="keyword">local</span> cjson = <span class="keyword">require</span>(<span class="value">"cjson"</span>)
+        ngx.header.content_type = <span class="value">"application/json"</span>
+        ngx.say(cjson.encode({name = <span class="value">"OpenResty"</span>, version = <span class="value">"1.21"</span>}))
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>API 网关、WAF 防火墙、动态内容生成、请求处理、认证授权、限流熔断等。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        njs (Nginx JavaScript)
+                        <span class="plugin-rank">🥈 NO.2</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag official">官方出品</span>
+                        <span class="plugin-tag">JavaScript</span>
+                        <span class="plugin-tag">轻量级</span>
+                    </div>
+                    <p>
+                        <strong>njs</strong> 是 Nginx 官方推出的 JavaScript 模块，允许在 Nginx 配置中使用 JavaScript 脚本。
+                        与 ngx_lua 类似，但使用更流行的 JavaScript 语言，学习成本更低。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <p>njs 已作为动态模块包含在官方 Nginx 包中：</p>
+                        <code># Ubuntu/Debian - 安装 njs 模块
+sudo apt install -y libnginx-mod-http-js
+
+# 配置文件中加载
+load_module modules/ngx_http_js_module.so;
+
+# 或使用 Docker（官方镜像已包含）
+docker pull nginx</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>Nginx 官方支持</li>
+                        <li>使用 JavaScript 语言</li>
+                        <li>轻量级脚本引擎</li>
+                        <li>与 Nginx 深度集成</li>
+                        <li>持续更新维护</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="comment"># 加载模块</span>
+load_module modules/ngx_http_js_module.so;
+
+<span class="keyword">http</span> {
+    <span class="directive">js_path</span> <span class="value">"/etc/nginx/js/"</span>;
+    <span class="directive">js_import</span> api from <span class="value">api.js</span>;
+
+    <span class="keyword">location</span> <span class="value">/hello</span> {
+        <span class="directive">js_content</span> api.hello;
+    }
+}</pre>
+                        <pre><span class="comment">// api.js</span>
+<span class="keyword">function</span> hello(r) {
+    r.return(200, <span class="value">"Hello, JavaScript!"</span>);
+}
+
+<span class="keyword">export</span> default { hello };</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>请求过滤、动态响应、Header 处理、简单业务逻辑、A/B 测试等。
+                    </div>
+                </div>
+
+                <!-- 第二类：安全模块 -->
+                <div class="plugin-category">
+                    <h3>🛡️ 安全模块（知名度 ★★★★☆）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ModSecurity
+                        <span class="plugin-rank">🥉 NO.3</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">WAF</span>
+                        <span class="plugin-tag">安全防护</span>
+                    </div>
+                    <p>
+                        <strong>ModSecurity</strong> 是开源的 Web 应用防火墙（WAF），最初为 Apache 开发，
+                        现在有 Nginx 版本。提供 SQL 注入、XSS、CSRF 等攻击防护，支持自定义规则。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 需要编译安装，或使用预编译包
+# Ubuntu/Debian
+sudo apt install -y libmodsecurity3 modsecurity
+
+# 编译安装（从源码）
+git clone https://github.com/SpiderLabs/ModSecurity
+cd ModSecurity
+git submodule init && git submodule update
+./build.sh
+./configure --with-nginx
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>OWASP 核心规则集</li>
+                        <li>SQL 注入防护</li>
+                        <li>XSS 攻击防护</li>
+                        <li>请求/响应检查</li>
+                        <li>IP 信誉检查</li>
+                        <li>详细日志记录</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">modsecurity</span> <span class="value">on</span>;
+    <span class="directive">modsecurity_rules_file</span> <span class="value">/etc/nginx/modsec/modsecurity.conf</span>;
+
+    <span class="keyword">location</span> <span class="value">/</span> {
+        <span class="directive">modsecurity_rules</span> <span class="value">"SecRuleEngine On"</span>;
+    }
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>Web 应用防火墙、防止 SQL 注入、XSS 攻击防护、CC 攻击防护、敏感信息泄露防护。
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ngx_brotli
+                        <span class="plugin-rank">NO.4</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">压缩</span>
+                        <span class="plugin-tag">性能优化</span>
+                    </div>
+                    <p>
+                        <strong>ngx_brotli</strong> 是 Google Brotli 压缩算法的 Nginx 模块。
+                        Brotli 压缩率比 gzip 高 20-26%，特别适合文本资源压缩，
+                        可显著减少传输数据量，提升页面加载速度。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 需要编译安装
+git clone https://github.com/google/ngx_brotli
+cd ngx_brotli
+git submodule update --init
+
+# 编译 Nginx 时添加模块
+./configure --add-module=/path/to/ngx_brotli
+make
+sudo make install
+
+# 或使用 OpenResty + 预编译模块</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>比 gzip 高 20-26% 压缩率</li>
+                        <li>支持动态压缩</li>
+                        <li>多种压缩级别</li>
+                        <li>浏览器广泛支持</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">brotli</span> <span class="value">on</span>;
+    <span class="directive">brotli_comp_level</span> <span class="value">6</span>;
+    <span class="directive">brotli_types</span> <span class="value">text/plain text/css application/json application/javascript text/xml application/xml</span>;
+    
+    <span class="comment"># 同时支持 gzip（兼容旧浏览器）</span>
+    <span class="directive">gzip</span> <span class="value">on</span>;
+}</pre>
+                    </div>
+                    <div class="tip-box">
+                        <strong>💡 使用场景：</strong>静态资源压缩、HTML/CSS/JS 压缩、API 响应压缩、提升页面加载速度。
+                    </div>
+                </div>
+
+                <!-- 第三类：功能扩展模块 -->
+                <div class="plugin-category">
+                    <h3>⚙️ 功能扩展模块（知名度 ★★★☆☆）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-upstream-fair
+                        <span class="plugin-rank">NO.5</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">负载均衡</span>
+                        <span class="plugin-tag">智能调度</span>
+                    </div>
+                    <p>
+                        <strong>nginx-upstream-fair</strong> 提供智能负载均衡算法，
+                        根据后端服务器的实时负载情况动态分配请求，避免请求堆积在慢服务器上。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 编译安装
+git clone https://github.com/gnosek/nginx-upstream-fair
+./configure --add-module=/path/to/nginx-upstream-fair
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>按后端负载分配</li>
+                        <li>避免慢服务器堆积</li>
+                        <li>权重配置支持</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">upstream</span> <span class="value">backend</span> {
+    fair;
+    server 192.168.1.1:8080;
+    server 192.168.1.2:8080;
+    server 192.168.1.3:8080;
+}
+
+<span class="keyword">server</span> {
+    <span class="keyword">location</span> <span class="value">/</span> {
+        <span class="directive">proxy_pass</span> <span class="value">http://backend</span>;
+    }
+}</pre>
+                    </div>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        ngx_http_geoip2_module
+                        <span class="plugin-rank">NO.6</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">地理位置</span>
+                        <span class="plugin-tag">IP 识别</span>
+                    </div>
+                    <p>
+                        <strong>GeoIP2</strong> 模块提供基于 IP 的地理位置识别功能，
+                        可以根据访客 IP 判断国家、地区、城市等信息，用于区域限制、内容本地化等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 需要 MaxMind GeoIP2 数据库
+sudo apt install -y libmaxminddb-dev libmaxminddb0
+
+# 编译模块
+git clone https://github.com/leev/ngx_http_geoip2_module
+./configure --add-module=/path/to/ngx_http_geoip2_module
+make
+sudo make install
+
+# 下载 GeoIP2 数据库
+wget https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>IP 地理位置识别</li>
+                        <li>支持国家/地区/城市</li>
+                        <li>ISP 和网络类型识别</li>
+                        <li>低内存占用</li>
+                    </ul>
+                    <div class="config-example">
+                        <h4>配置示例</h4>
+                        <pre><span class="keyword">http</span> {
+    <span class="directive">geoip2</span> <span class="value">/etc/nginx/GeoLite2-Country.mmdb</span> {
+        <span class="directive">auto_reload</span> <span class="value">5m</span>;
+        $geoip2_data_country_code country iso_code;
+    }
+
+    <span class="comment"># 只允许中国访问</span>
+    <span class="keyword">location</span> <span class="value">/</span> {
+        <span class="directive">allow</span> <span class="value">CN</span>;
+        <span class="directive">deny</span> <span class="value">all</span>;
+    }
+}</pre>
+                    </div>
+                </div>
+
+                <!-- 第四类：其他实用模块 -->
+                <div class="plugin-category">
+                    <h3>🔧 其他实用模块（知名度 ★★☆☆☆）</h3>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        nginx-rtmp-module
+                        <span class="plugin-rank">NO.7</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">流媒体</span>
+                        <span class="plugin-tag">RTMP</span>
+                    </div>
+                    <p>
+                        <strong>nginx-rtmp-module</strong> 为 Nginx 添加 RTMP/HLS/DASH流媒体支持，
+                        可以搭建直播服务器、视频点播平台。支持转码、录制、统计等功能。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 需要 FFmpeg 支持
+sudo apt install -y ffmpeg
+
+# 编译安装
+git clone https://github.com/arut/nginx-rtmp-module
+./configure --add-module=/path/to/nginx-rtmp-module
+make
+sudo make install</code>
+                    </div>
+                    <ul class="feature-list">
+                        <li>RTMP/HLS/DASH支持</li>
+                        <li>直播推流/拉流</li>
+                        <li>视频录制</li>
+                        <li>实时统计</li>
+                    </ul>
+                </div>
+
+                <div class="plugin-card">
+                    <h3>
+                        lua-resty-http
+                        <span class="plugin-rank">NO.8</span>
+                    </h3>
+                    <div class="plugin-tags">
+                        <span class="plugin-tag community">社区驱动</span>
+                        <span class="plugin-tag">Lua 库</span>
+                        <span class="plugin-tag">HTTP 客户端</span>
+                    </div>
+                    <p>
+                        <strong>lua-resty-http</strong> 是 OpenResty 的 HTTP 客户端库，
+                        用于在 Lua 脚本中发起 HTTP 请求，常用于 API 调用、服务间通信等场景。
+                    </p>
+                    <div class="install-section">
+                        <h4>📦 安装方式</h4>
+                        <code># 使用 luarocks 安装
+luarocks install lua-resty-http
+
+# 或在 OpenResty 中直接使用
+# 通常已预装</code>
+                    </div>
+                </div>
+
+                <!-- 模块对比表 -->
+                <h3 style="margin-top: 40px;">📊 模块对比总览</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>模块名称</th>
+                            <th>类型</th>
+                            <th>知名度</th>
+                            <th>安装难度</th>
+                            <th>主要用途</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ngx_lua (OpenResty)</strong></td>
+                            <td>脚本引擎</td>
+                            <td><span class="stars">★★★★★</span></td>
+                            <td>⭐⭐</td>
+                            <td>业务逻辑、API 网关</td>
+                        </tr>
+                        <tr>
+                            <td><strong>njs</strong></td>
+                            <td>脚本引擎</td>
+                            <td><span class="stars">★★★★☆</span></td>
+                            <td>⭐</td>
+                            <td>请求处理、动态响应</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ModSecurity</strong></td>
+                            <td>安全 WAF</td>
+                            <td><span class="stars">★★★★☆</span></td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>Web 应用防火墙</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ngx_brotli</strong></td>
+                            <td>压缩</td>
+                            <td><span class="stars">★★★★☆</span></td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>资源压缩优化</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginx-upstream-fair</strong></td>
+                            <td>负载均衡</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>智能负载调度</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ngx_http_geoip2</strong></td>
+                            <td>地理位置</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐</td>
+                            <td>IP 地域识别</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginx-rtmp-module</strong></td>
+                            <td>流媒体</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>直播/点播</td>
+                        </tr>
+                        <tr>
+                            <td><strong>lua-resty-http</strong></td>
+                            <td>HTTP 客户端</td>
+                            <td><span class="stars">★★★☆☆</span></td>
+                            <td>⭐⭐</td>
+                            <td>服务间通信</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 编译指南 -->
+                <h3 style="margin-top: 40px;">🔨 编译安装指南</h3>
+                <div class="tip-box">
+                    <strong>📋 通用编译步骤：</strong>
+                    <ol style="margin: 15px 0 0 20px; line-height: 2.2;">
+                        <li>下载 Nginx 源码：<code>wget https://nginx.org/download/nginx-1.24.0.tar.gz</code></li>
+                        <li>解压源码：<code>tar -xzf nginx-1.24.0.tar.gz</code></li>
+                        <li>克隆第三方模块：<code>git clone https://github.com/xxx/module</code></li>
+                        <li>配置编译选项：<code>./configure --add-module=/path/to/module</code></li>
+                        <li>编译安装：<code>make && sudo make install</code></li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Nginx 深度学习。深入学习 Nginx 内部机制与配置实践。</p>
+        </div>
+    </footer>
+</body>
+</html>
