@@ -100,33 +100,6 @@
             color: white;
             transform: translateY(-3px);
         }
-        .log-pyramid {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 30px 0;
-        }
-        .pyramid-level {
-            display: flex;
-            justify-content: center;
-            margin: 5px 0;
-        }
-        .pyramid-block {
-            padding: 12px 30px;
-            color: white;
-            font-weight: 600;
-            border-radius: 4px;
-            text-align: center;
-            min-width: 200px;
-        }
-        .pyramid-level.emerg { background: #b71c1c; }
-        .pyramid-level.alert { background: #c62828; }
-        .pyramid-level.crit { background: #d32f2f; }
-        .pyramid-level.error { background: #f57c00; }
-        .pyramid-level.warn { background: #fbc02d; color: #333; }
-        .pyramid-level.notice { background: #1976d2; }
-        .pyramid-level.info { background: #388e3c; }
-        .pyramid-level.debug { background: #757575; }
         .debug-workflow {
             position: relative;
             padding: 30px;
@@ -309,37 +282,71 @@
     </header>
 
     <main>
-        <!-- 第一部分：日志级别金字塔 -->
+        <!-- 第一部分：日志级别表格 -->
         <section class="section" id="log-levels">
             <div class="container">
-                <h2 class="section-title">📊 一、日志级别金字塔</h2>
-                
-                <div class="log-pyramid">
-                    <div class="pyramid-level debug">
-                        <div class="pyramid-block" style="min-width: 400px;">DEBUG - 调试</div>
-                    </div>
-                    <div class="pyramid-level info">
-                        <div class="pyramid-block" style="min-width: 350px;">INFO - 信息</div>
-                    </div>
-                    <div class="pyramid-level notice">
-                        <div class="pyramid-block" style="min-width: 300px;">NOTICE - 通知</div>
-                    </div>
-                    <div class="pyramid-level warn">
-                        <div class="pyramid-block" style="min-width: 250px;">WARN - 警告</div>
-                    </div>
-                    <div class="pyramid-level error">
-                        <div class="pyramid-block" style="min-width: 200px;">ERROR - 错误</div>
-                    </div>
-                    <div class="pyramid-level crit">
-                        <div class="pyramid-block" style="min-width: 150px;">CRIT - 严重</div>
-                    </div>
-                    <div class="pyramid-level alert">
-                        <div class="pyramid-block" style="min-width: 120px;">ALERT - 警报</div>
-                    </div>
-                    <div class="pyramid-level emerg">
-                        <div class="pyramid-block" style="min-width: 100px;">EMERG - 紧急</div>
-                    </div>
-                </div>
+                <h2 class="section-title">📊 一、日志级别一览表</h2>
+
+                <table class="tool-comparison" style="margin-top: 30px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">级别</th>
+                            <th style="width: 20%;">英文名称</th>
+                            <th style="width: 35%;">说明</th>
+                            <th style="width: 30%;">使用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #757575; border-radius: 2px; margin-right: 8px;"></span>DEBUG</td>
+                            <td>调试</td>
+                            <td>最详细的日志信息，包含所有调试细节</td>
+                            <td>开发环境、问题深度排查</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #388e3c; border-radius: 2px; margin-right: 8px;"></span>INFO</td>
+                            <td>信息</td>
+                            <td>常规信息，记录正常操作流程</td>
+                            <td>开发环境、测试环境</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #1976d2; border-radius: 2px; margin-right: 8px;"></span>NOTICE</td>
+                            <td>通知</td>
+                            <td>正常但值得注意的事件</td>
+                            <td>测试环境、预发布环境</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #fbc02d; border-radius: 2px; margin-right: 8px;"></span>WARN</td>
+                            <td>警告</td>
+                            <td>警告信息，潜在问题但不影响运行</td>
+                            <td>生产环境（推荐）</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #f57c00; border-radius: 2px; margin-right: 8px;"></span>ERROR</td>
+                            <td>错误</td>
+                            <td>错误信息，影响功能但服务仍运行</td>
+                            <td>生产环境（推荐）</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #d32f2f; border-radius: 2px; margin-right: 8px;"></span>CRIT</td>
+                            <td>严重</td>
+                            <td>严重错误，部分功能失效</td>
+                            <td>生产环境（仅关键业务）</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #c62828; border-radius: 2px; margin-right: 8px;"></span>ALERT</td>
+                            <td>警报</td>
+                            <td>警报信息，需要立即处理</td>
+                            <td>生产环境（高可用系统）</td>
+                        </tr>
+                        <tr>
+                            <td><span style="display: inline-block; width: 12px; height: 12px; background: #b71c1c; border-radius: 2px; margin-right: 8px;"></span>EMERG</td>
+                            <td>紧急</td>
+                            <td>系统不可用，需要立即处理</td>
+                            <td>所有环境（最低级别）</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <div class="flow-container">
                     <h4 style="text-align: center; margin-bottom: 20px;">📝 日志级别配置流程</h4>
