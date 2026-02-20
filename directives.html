@@ -5,112 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nginx 指令详解 - 核心配置指南</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         .chart-container {
             position: relative;
-            height: 400px;
             margin: 20px 0;
             padding: 20px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .instruction-tree {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .tree-node {
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            background: white;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .tree-node:hover {
-            border-color: #007acc;
-            box-shadow: 0 4px 15px rgba(0,122,204,0.2);
-        }
-        .tree-node.active {
-            background: #007acc;
-            color: white;
-            border-color: #007acc;
-        }
-        .tree-children {
-            margin-left: 30px;
-            border-left: 2px dashed #ccc;
-            padding-left: 20px;
-        }
-        .timeline-chart {
-            width: 100%;
-            height: 300px;
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .interaction-panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .search-input {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        .filter-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            background: white;
-            color: #667eea;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .filter-btn.active {
-            background: #ff6b6b;
-            color: white;
-        }
-        .comparison-table {
+        .info-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
-        .comparison-table th, .comparison-table td {
+        .info-table th, .info-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        .comparison-table th {
+        .info-table th {
             background: #f8f9fa;
             font-weight: bold;
         }
+        .info-table code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .section-subtitle {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .page-intro {
+            color: #666;
+            margin-bottom: 20px;
+        }
         .highlight-box {
-            background: linear-gradient(45deg, #ff6b6b, #ffa500);
-            color: white;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
             padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -135,364 +79,79 @@
         <section class="section">
             <div class="container">
                 <h1 class="page-title">Nginx 指令详解</h1>
-                <p class="page-intro">全面掌握Nginx核心指令及其使用场景</p>
-                
-                <!-- 交互式指令分类树图 -->
-                <div class="chart-container">
-                    <h2>🎯 指令分类树图</h2>
-                    <div class="instruction-tree" id="instructionTree">
-                        <div class="tree-node" onclick="toggleNode(this, 'basic')">
-                            <strong>基础指令</strong>
-                            <p>服务器配置、监听、路由等核心功能</p>
-                            <div class="tree-children" id="basic-children" style="display: none;">
-                                <div class="tree-node">
-                                    <strong>服务器配置</strong>
-                                    <p>server, listen, server_name, root, index</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>路由匹配</strong>
-                                    <p>location, alias, try_files</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tree-node" onclick="toggleNode(this, 'proxy')">
-                            <strong>代理和负载均衡</strong>
-                            <p>反向代理、负载均衡、缓存等</p>
-                            <div class="tree-children" id="proxy-children" style="display: none;">
-                                <div class="tree-node">
-                                    <strong>代理配置</strong>
-                                    <p>proxy_pass, proxy_set_header, proxy_cache</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>负载均衡</strong>
-                                    <p>upstream, least_conn, ip_hash</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>镜像功能</strong>
-                                    <p>mirror, mirror_pass, mirror_request_body</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tree-node" onclick="toggleNode(this, 'performance')">
-                            <strong>性能优化</strong>
-                            <p>缓存、压缩、连接管理等</p>
-                            <div class="tree-children" id="performance-children" style="display: none;">
-                                <div class="tree-node">
-                                    <strong>缓存策略</strong>
-                                    <p>proxy_cache, expires, open_file_cache</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>压缩优化</strong>
-                                    <p>gzip, gzip_comp_level, gzip_types</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>连接管理</strong>
-                                    <p>keepalive_timeout, sendfile, tcp_nopush</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tree-node" onclick="toggleNode(this, 'security')">
-                            <strong>安全防护</strong>
-                            <p>认证、加密、访问控制等</p>
-                            <div class="tree-children" id="security-children" style="display: none;">
-                                <div class="tree-node">
-                                    <strong>访问控制</strong>
-                                    <p>allow, deny, limit_conn, limit_req</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>认证授权</strong>
-                                    <p>auth_basic, auth_request, valid_referers</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>SSL/TLS</strong>
-                                    <p>ssl, ssl_certificate, ssl_protocols</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tree-node" onclick="toggleNode(this, 'advanced')">
-                            <strong>高级功能</strong>
-                            <p>现代特性、AI、量子计算等</p>
-                            <div class="tree-children" id="advanced-children" style="display: none;">
-                                <div class="tree-node">
-                                    <strong>云原生</strong>
-                                    <p>kubernetes, service_mesh, microgateway</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>AI/ML</strong>
-                                    <p>ai_optimization, ml_model, neural_network</p>
-                                </div>
-                                <div class="tree-node">
-                                    <strong>前沿技术</strong>
-                                    <p>quantum_encryption, edge_ai_inference</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>📈 性能影响对比图表</h2>
-                <div class="chart-container">
-                    <h3>指令性能影响对比雷达图</h3>
-                    <canvas id="performanceRadarChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>不同指令组合性能测试结果</h3>
-                    <canvas id="performanceBarChart"></canvas>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>🔎 指令搜索和过滤界面</h2>
-                <div class="interaction-panel">
-                    <h3>智能搜索指令</h3>
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="输入关键词搜索指令..." id="globalSearch">
-                        <button class="filter-btn" onclick="performGlobalSearch()">搜索</button>
-                    </div>
-                    
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterByCategory('all')">全部</button>
-                        <button class="filter-btn" onclick="filterByCategory('basic')">基础指令</button>
-                        <button class="filter-btn" onclick="filterByCategory('proxy')">代理负载均衡</button>
-                        <button class="filter-btn" onclick="filterByCategory('performance')">性能优化</button>
-                        <button class="filter-btn" onclick="filterByCategory('security')">安全防护</button>
-                        <button class="filter-btn" onclick="filterByCategory('advanced')">高级功能</button>
-                        <button class="filter-btn" onclick="filterByYear('all')">全部年份</button>
-                        <button class="filter-btn" onclick="filterByYear('2018-2019')">2018-2019</button>
-                        <button class="filter-btn" onclick="filterByYear('2020-2022')">2020-2022</button>
-                        <button class="filter-btn" onclick="filterByYear('2023-2026')">2023-2026</button>
-                    </div>
-                </div>
-                
-                <div class="chart-container" id="searchResults">
-                    <h3>搜索结果</h3>
-                    <div id="searchResultsContent">
-                        <p>🔍 输入关键词开始搜索...</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>⏱️ 指令执行时序图</h2>
-                <div class="chart-container">
-                    <h3>Nginx请求处理流程</h3>
-                    <div id="executionTimeline"></div>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>不同类型指令执行时序对比</h3>
-                    <canvas id="executionChart"></canvas>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>⚙️ 配置组合关系表格</h2>
-                <div class="chart-container">
-                    <h3>常用指令组合配置表</h3>
-                    <table class="comparison-table">
-                        <thead>
-                            <tr>
-                                <th>应用场景</th>
-                                <th>核心指令组合</th>
-                                <th>说明</th>
-                                <th>性能影响</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>静态文件服务</td>
-                                <td>server → root → index → location → expires</td>
-                                <td>提供静态文件HTTP服务</td>
-                                <td>低</td>
-                            </tr>
-                            <tr>
-                                <td>反向代理</td>
-                                <td>server → location → proxy_pass → proxy_set_header</td>
-                                <td>将请求转发到后端服务器</td>
-                                <td>中</td>
-                            </tr>
-                            <tr>
-                                <td>负载均衡</td>
-                                <td>upstream → server → proxy_pass → least_conn</td>
-                                <td>负载均衡分发请求</td>
-                                <td>中</td>
-                            </tr>
-                            <tr>
-                                <td>API网关</td>
-                                <td>server → location → proxy_pass → rate_limit → auth</td>
-                                <td>API接口管理网关</td>
-                                <td>高</td>
-                            </tr>
-                            <tr>
-                                <td>SSL终止</td>
-                                <td>server → listen 443 ssl → ssl_certificate → proxy_pass</td>
-                                <td>HTTPS到HTTP转发</td>
-                                <td>中</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>🔄 指令作用域流程图</h2>
-                <div class="chart-container">
-                    <div id="scopeFlowChart"></div>
-                </div>
-                
+                <p class="page-intro">全面掌握 Nginx 核心指令及其使用场景</p>
+
                 <div class="highlight-box">
-                    <strong>💡 作用域说明：</strong> Nginx指令的作用域决定了它们可以在哪个配置块中使用。从main到location的作用域层级如下：
+                    <strong>💡 说明：</strong> 本页面整理的是 Nginx 官方版本中真实存在的有效指令，不包含任何虚构或第三方模块的指令。
                 </div>
-                
-                <div class="interaction-panel">
-                    <h3>🔍 指令作用域交互探索</h3>
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="搜索指令名称..." id="scopeSearch">
-                        <button class="filter-btn" onclick="searchDirective()">搜索</button>
-                    </div>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterByScope('all')">全部</button>
-                        <button class="filter-btn" onclick="filterByScope('main')">main</button>
-                        <button class="filter-btn" onclick="filterByScope('http')">http</button>
-                        <button class="filter-btn" onclick="filterByScope('server')">server</button>
-                        <button class="filter-btn" onclick="filterByScope('location')">location</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="section">
-            <div class="container">
-                <h2>📊 指令使用频率分析</h2>
-                <div class="chart-container">
-                    <h3>指令使用频率饼图</h3>
-                    <canvas id="frequencyChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>指令历年增长趋势</h3>
-                    <canvas id="timelineChart"></canvas>
+
+                <h2 class="section-subtitle">📋 指令作用域层级</h2>
+                <div class="note-box">
+                    <strong>作用域说明：</strong> Nginx 指令的作用域决定了它们可以在哪个配置块中使用。层级结构如下：
+                    <ul>
+                        <li><strong>main</strong> - 全局配置，影响 Nginx 整体行为</li>
+                        <li><strong>events</strong> - 事件处理配置</li>
+                        <li><strong>http</strong> - HTTP 服务配置</li>
+                        <li><strong>server</strong> - 虚拟主机配置</li>
+                        <li><strong>location</strong> - 路由匹配配置</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-
         <section class="section">
             <div class="container">
-                <h2 class="section-title">最常用指令详解</h2>
-                
-                <h3 class="section-subtitle">核心配置指令</h3>
+                <h2 class="section-title">核心配置指令</h2>
+
+                <h3 class="section-subtitle">Main 上下文指令</h3>
                 <table class="info-table">
                     <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                        <tr><th>指令</th><th>默认值</th><th>说明</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>worker_processes</code></td><td>1</td><td>main</td><td>Worker进程数量，通常设为CPU核心数</td></tr>
-                        <tr><td><code>worker_connections</code></td><td>1024</td><td>events</td><td>每个Worker的最大连接数</td></tr>
-                        <tr><td><code>daemon</code></td><td>on</td><td>main</td><td>是否以守护进程运行</td></tr>
-                        <tr><td><code>error_log</code></td><td>logs/error.log</td><td>main, http, server, location</td><td>错误日志路径和级别</td></tr>
-                        <tr><td><code>pid</code></td><td>logs/nginx.pid</td><td>main</td><td>主进程PID文件路径</td></tr>
+                        <tr><td><code>worker_processes</code></td><td>1</td><td>Worker 进程数量，通常设为 CPU 核心数或 auto</td></tr>
+                        <tr><td><code>error_log</code></td><td>logs/error.log</td><td>错误日志路径和级别（debug|info|notice|warn|error|crit|alert|emerg）</td></tr>
+                        <tr><td><code>pid</code></td><td>logs/nginx.pid</td><td>主进程 PID 文件路径</td></tr>
+                        <tr><td><code>daemon</code></td><td>on</td><td>是否以守护进程运行</td></tr>
+                        <tr><td><code>user</code></td><td>root</td><td>运行 Nginx 的用户和用户组</td></tr>
+                        <tr><td><code>worker_rlimit_nofile</code></td><td>-</td><td>Worker 进程最大打开文件数</td></tr>
+                        <tr><td><code>include</code></td><td>-</td><td>包含其他配置文件</td></tr>
                     </tbody>
                 </table>
 
-                <h3 class="section-subtitle">HTTP核心指令</h3>
+                <h3 class="section-subtitle">Events 上下文指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>worker_connections</code></td><td>1024</td><td>每个 Worker 的最大连接数</td></tr>
+                        <tr><td><code>use</code></td><td>-</td><td>连接处理方法（epoll|kqueue|select|poll 等）</td></tr>
+                        <tr><td><code>multi_accept</code></td><td>off</td><td>是否一次接受多个连接</td></tr>
+                        <tr><td><code>accept_mutex</code></td><td>on</td><td>是否使用互斥锁接受连接</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">HTTP 核心指令</h2>
+
+                <h3 class="section-subtitle">基础服务指令</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
                     </thead>
                     <tbody>
                         <tr><td><code>server</code></td><td>-</td><td>http</td><td>定义虚拟服务器</td></tr>
-                        <tr><td><code>location</code></td><td>-</td><td>server, location</td><td>匹配请求URI</td></tr>
-                        <tr><td><code>listen</code><td>80</td><td>server</td><td>监听端口和地址</td></tr>
-                        <tr><td><code>server_name</code><td>""</td><td>server</td><td>虚拟主机名</td></tr>
+                        <tr><td><code>listen</code></td><td>80</td><td>server</td><td>监听端口和地址</td></tr>
+                        <tr><td><code>server_name</code></td><td>""</td><td>server</td><td>虚拟主机名</td></tr>
                         <tr><td><code>root</code></td><td>html</td><td>http, server, location</td><td>网站根目录</td></tr>
-                        <tr><td><code>index</code><td>index.html</td><td>http, server, location</td><td>默认首页文件</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">代理相关指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>proxy_pass</code></td><td>-</td><td>location, if in location</td><td>代理服务器地址</td></tr>
-                        <tr><td><code>proxy_set_header</code></td><td>-</td><td>http, server, location</td><td>设置代理请求头</td></tr>
-                        <tr><td><code>proxy_connect_timeout</code></td><td>60s</td><td>http, server, location</td><td>连接超时时间</td></tr>
-                        <tr><td><code>proxy_read_timeout</code></td><td>60s</td><td>http, server, location</td><td>读取超时时间</td></tr>
-                        <tr><td><code>proxy_send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送超时时间</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">缓存指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>proxy_cache</code></td><td>off</td><td>http, server, location</td><td>启用代理缓存</td></tr>
-                        <tr><td><code>proxy_cache_path</code></td><td>-</td><td>http</td><td>定义缓存路径和参数</td></tr>
-                        <tr><td><code>proxy_cache_valid</code><td>-</td><td>http, server, location</td><td>缓存有效时间</td></tr>
-                        <tr><td><code>expires</code><td>off</td><td>http, server, location</td><td>缓存过期时间</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">负载均衡指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>upstream</code><td>-</td><td>http</td><td>定义后端服务器组</td></tr>
-                        <tr><td><code>server</code><td>-</td><td>upstream</td><td>定义后端服务器</td></tr>
-                        <tr><td><code>least_conn</code><td>-</td><td>upstream</td><td>最少连接策略</td></tr>
-                        <tr><td><code>ip_hash</code><td>-</td><td>upstream</td><td>IP哈希策略</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="container">
-                <h3 class="section-subtitle">SSL/TLS指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>ssl</code></td><td>off</td><td>http, server</td><td>启用SSL</td></tr>
-                        <tr><td><code>ssl_certificate</code><td>-</td><td>http, server</td><td>证书文件路径</td></tr>
-                        <tr><td><code>ssl_certificate_key</code><td>-</td><td>http, server</td><td>私钥文件路径</td></tr>
-                        <tr><td><code>ssl_protocols</code><td>TLSv1 TLSv1.1 TLSv1.2 TLSv1.3</td><td>http, server</td><td>支持的SSL协议</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">访问控制指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>allow</code></td><td>-</td><td>http, server, location</td><td>允许访问的IP</td></tr>
-                        <tr><td><code>deny</code></td><td>-</td><td>http, server, location</td><td>拒绝访问的IP</td></tr>
-                        <tr><td><code>auth_basic</code></td><td>off</td><td>http, server, location</td><td>启用基本认证</td></tr>
+                        <tr><td><code>index</code></td><td>index.html</td><td>http, server, location</td><td>默认首页文件</td></tr>
+                        <tr><td><code>location</code></td><td>-</td><td>server, location</td><td>匹配请求 URI</td></tr>
+                        <tr><td><code>alias</code></td><td>-</td><td>location</td><td>路径别名（仅用于 location）</td></tr>
+                        <tr><td><code>try_files</code></td><td>-</td><td>server, location</td><td>按顺序检查文件是否存在</td></tr>
                     </tbody>
                 </table>
 
@@ -502,41 +161,266 @@
                         <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>sendfile</code></td><td>on</td><td>http, server, location</td><td>启用零拷贝传输</td></tr>
-                        <tr><td><code>tcp_nopush</code></td><td>on</td><td>http, server, location</td><td>优化TCP包发送</td></tr>
-                        <tr><td><code>gzip</code></td><td>off</td><td>http, server, location</td><td>启用gzip压缩</td></tr>
-                        <tr><td><code>gzip_comp_level</code></td><td>1</td><td>http, server, location</td><td>压缩级别(1-9)</td></tr>
-                        <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server, location</td><td>长连接超时</td></tr>
+                        <tr><td><code>sendfile</code></td><td>off</td><td>http, server, location</td><td>启用零拷贝传输</td></tr>
+                        <tr><td><code>tcp_nopush</code></td><td>off</td><td>http, server, location</td><td>优化 TCP 包发送</td></tr>
+                        <tr><td><code>tcp_nodelay</code></td><td>off</td><td>http, server, location</td><td>禁用 Nagle 算法</td></tr>
+                        <tr><td><code>keepalive_timeout</code></td><td>75s</td><td>http, server</td><td>长连接超时时间</td></tr>
+                        <tr><td><code>keepalive_requests</code></td><td>100</td><td>http, server</td><td>长连接最大请求数</td></tr>
+                        <tr><td><code>send_timeout</code></td><td>60s</td><td>http, server, location</td><td>响应超时时间</td></tr>
+                        <tr><td><code>reset_timedout_connection</code></td><td>off</td><td>http</td><td>重置超时的连接</td></tr>
                     </tbody>
                 </table>
 
-                <h3 class="section-subtitle">连接限制指令</h3>
+                <h3 class="section-subtitle">Gzip 压缩指令</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
                     </thead>
                     <tbody>
+                        <tr><td><code>gzip</code></td><td>off</td><td>http, server, location</td><td>启用 gzip 压缩</td></tr>
+                        <tr><td><code>gzip_comp_level</code></td><td>1</td><td>http, server, location</td><td>压缩级别 (1-9)</td></tr>
+                        <tr><td><code>gzip_types</code></td><td>text/html</td><td>http, server, location</td><td>压缩的 MIME 类型</td></tr>
+                        <tr><td><code>gzip_min_length</code></td><td>20</td><td>http, server, location</td><td>最小压缩长度</td></tr>
+                        <tr><td><code>gzip_max_length</code></td><td>unlimited</td><td>http, server, location</td><td>最大压缩长度</td></tr>
+                        <tr><td><code>gzip_buffers</code></td><td>32 4k/16 8k</td><td>http, server, location</td><td>压缩缓冲区</td></tr>
+                        <tr><td><code>gzip_http_version</code></td><td>1.1</td><td>http, server, location</td><td>HTTP 版本要求</td></tr>
+                        <tr><td><code>gzip_proxied</code></td><td>off</td><td>http, server, location</td><td>代理响应压缩条件</td></tr>
+                        <tr><td><code>gzip_vary</code></td><td>off</td><td>http, server, location</td><td>添加 Vary: Accept-Encoding</td></tr>
+                        <tr><td><code>gzip_disable</code></td><td>-</td><td>http, server, location</td><td>禁用压缩的条件</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">代理相关指令</h2>
+
+                <h3 class="section-subtitle">基础代理指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_pass</code></td><td>-</td><td>location, if</td><td>代理服务器地址</td></tr>
+                        <tr><td><code>proxy_set_header</code></td><td>-</td><td>http, server, location</td><td>设置代理请求头</td></tr>
+                        <tr><td><code>proxy_connect_timeout</code></td><td>60s</td><td>http, server, location</td><td>连接超时时间</td></tr>
+                        <tr><td><code>proxy_send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送超时时间</td></tr>
+                        <tr><td><code>proxy_read_timeout</code></td><td>60s</td><td>http, server, location</td><td>读取超时时间</td></tr>
+                        <tr><td><code>proxy_buffering</code></td><td>on</td><td>http, server, location</td><td>启用代理缓冲</td></tr>
+                        <tr><td><code>proxy_buffer_size</code></td><td>4k/8k</td><td>http, server, location</td><td>代理响应头缓冲区</td></tr>
+                        <tr><td><code>proxy_buffers</code></td><td>8 4k/8k</td><td>http, server, location</td><td>代理响应缓冲区</td></tr>
+                        <tr><td><code>proxy_busy_buffers_size</code></td><td>8k/16k</td><td>http, server, location</td><td>繁忙时缓冲区大小</td></tr>
+                        <tr><td><code>proxy_max_temp_file_size</code></td><td>1024m</td><td>http, server, location</td><td>临时文件最大大小</td></tr>
+                        <tr><td><code>proxy_redirect</code></td><td>default</td><td>http, server, location</td><td>修改代理响应头</td></tr>
+                        <tr><td><code>proxy_http_version</code></td><td>1.0</td><td>http, server, location</td><td>代理 HTTP 版本</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">代理缓存指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_cache_path</code></td><td>-</td><td>http</td><td>定义缓存路径和参数</td></tr>
+                        <tr><td><code>proxy_cache</code></td><td>off</td><td>http, server, location</td><td>启用代理缓存</td></tr>
+                        <tr><td><code>proxy_cache_valid</code></td><td>-</td><td>http, server, location</td><td>缓存有效时间</td></tr>
+                        <tr><td><code>proxy_cache_key</code></td><td>$scheme$proxy_host$request_uri</td><td>http, server, location</td><td>缓存键</td></tr>
+                        <tr><td><code>proxy_cache_min_uses</code></td><td>1</td><td>http, server, location</td><td>最小使用次数后缓存</td></tr>
+                        <tr><td><code>proxy_cache_use_stale</code></td><td>off</td><td>http, server, location</td><td>使用过期缓存的条件</td></tr>
+                        <tr><td><code>proxy_cache_methods</code></td><td>GET HEAD</td><td>http, server, location</td><td>缓存的 HTTP 方法</td></tr>
+                        <tr><td><code>proxy_no_cache</code></td><td>-</td><td>http, server, location</td><td>不缓存的条件</td></tr>
+                        <tr><td><code>proxy_cache_bypass</code></td><td>-</td><td>http, server, location</td><td>绕过缓存的条件</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">代理其他指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_next_upstream</code></td><td>error timeout</td><td>http, server, location</td><td>切换到后端服务器的条件</td></tr>
+                        <tr><td><code>proxy_next_upstream_tries</code></td><td>unlimited</td><td>http, server, location</td><td>最大尝试次数</td></tr>
+                        <tr><td><code>proxy_next_upstream_timeout</code></td><td>unlimited</td><td>http, server, location</td><td>尝试超时时间</td></tr>
+                        <tr><td><code>proxy_ignore_client_abort</code></td><td>off</td><td>http, server, location</td><td>忽略客户端中断</td></tr>
+                        <tr><td><code>proxy_intercept_errors</code></td><td>off</td><td>http, server, location</td><td>是否拦截错误响应</td></tr>
+                        <tr><td><code>proxy_pass_request_headers</code></td><td>on</td><td>http, server, location</td><td>传递请求头</td></tr>
+                        <tr><td><code>proxy_pass_request_body</code></td><td>on</td><td>http, server, location</td><td>传递请求体</td></tr>
+                        <tr><td><code>proxy_request_buffering</code></td><td>on</td><td>http, server, location</td><td>请求体缓冲</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">负载均衡指令</h2>
+
+                <h3 class="section-subtitle">Upstream 配置</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>upstream</code></td><td>-</td><td>http</td><td>定义后端服务器组</td></tr>
+                        <tr><td><code>server</code></td><td>-</td><td>upstream</td><td>定义后端服务器地址</td></tr>
+                        <tr><td><code>least_conn</code></td><td>-</td><td>upstream</td><td>最少连接负载均衡</td></tr>
+                        <tr><td><code>ip_hash</code></td><td>-</td><td>upstream</td><td>IP 哈希会话保持</td></tr>
+                        <tr><td><code>hash</code></td><td>-</td><td>upstream</td><td>自定义哈希负载均衡</td></tr>
+                        <tr><td><code>least_time</code></td><td>-</td><td>upstream</td><td>最短响应时间负载均衡</td></tr>
+                        <tr><td><code>random</code></td><td>-</td><td>upstream</td><td>随机负载均衡</td></tr>
+                        <tr><td><code>keepalive</code></td><td>-</td><td>upstream</td><td>保持连接数</td></tr>
+                        <tr><td><code>zone</code></td><td>-</td><td>upstream</td><td>共享内存区域</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">Upstream Server 参数</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>参数</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>weight=number</code></td><td>服务器权重</td></tr>
+                        <tr><td><code>max_fails=number</code></td><td>最大失败次数（默认 1）</td></tr>
+                        <tr><td><code>fail_timeout=time</code></td><td>失败超时时间（默认 10s）</td></tr>
+                        <tr><td><code>backup</code></td><td>标记为备份服务器</td></tr>
+                        <tr><td><code>down</code></td><td>标记服务器离线</td></tr>
+                        <tr><td><code>max_conns=number</code></td><td>最大连接数限制</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">SSL/TLS 指令</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>ssl</code></td><td>off</td><td>http, server</td><td>启用 SSL</td></tr>
+                        <tr><td><code>ssl_certificate</code></td><td>-</td><td>http, server</td><td>证书文件路径</td></tr>
+                        <tr><td><code>ssl_certificate_key</code></td><td>-</td><td>http, server</td><td>私钥文件路径</td></tr>
+                        <tr><td><code>ssl_protocols</code></td><td>TLSv1 TLSv1.1 TLSv1.2</td><td>http, server</td><td>支持的 SSL 协议版本</td></tr>
+                        <tr><td><code>ssl_ciphers</code></td><td>DEFAULT</td><td>http, server</td><td>加密套件</td></tr>
+                        <tr><td><code>ssl_prefer_server_ciphers</code></td><td>off</td><td>http, server</td><td>优先使用服务器加密套件</td></tr>
+                        <tr><td><code>ssl_session_cache</code></td><td>NONE</td><td>http, server</td><td>SSL 会话缓存</td></tr>
+                        <tr><td><code>ssl_session_timeout</code></td><td>1d</td><td>http, server</td><td>SSL 会话超时</td></tr>
+                        <tr><td><code>ssl_session_tickets</code></td><td>on</td><td>http, server</td><td>SSL 会话票证</td></tr>
+                        <tr><td><code>ssl_stapling</code></td><td>off</td><td>http, server</td><td>OCSP 装订</td></tr>
+                        <tr><td><code>ssl_stapling_verify</code></td><td>off</td><td>http, server</td><td>验证 OCSP 响应</td></tr>
+                        <tr><td><code>ssl_trusted_certificate</code></td><td>-</td><td>http, server</td><td>可信 CA 证书</td></tr>
+                        <tr><td><code>ssl_verify_client</code></td><td>off</td><td>http, server</td><td>验证客户端证书</td></tr>
+                        <tr><td><code>ssl_verify_depth</code></td><td>1</td><td>http, server</td><td>客户端证书验证深度</td></tr>
+                        <tr><td><code>ssl_dhparam</code></td><td>-</td><td>http, server</td><td>Diffie-Hellman 参数文件</td></tr>
+                        <tr><td><code>ssl_early_data</code></td><td>off</td><td>http, server</td><td>TLS 1.3 0-RTT 数据</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">访问控制指令</h2>
+
+                <h3 class="section-subtitle">IP 访问控制</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>allow</code></td><td>-</td><td>http, server, location</td><td>允许访问的 IP 或网段</td></tr>
+                        <tr><td><code>deny</code></td><td>-</td><td>http, server, location</td><td>拒绝访问的 IP 或网段</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">认证指令</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>auth_basic</code></td><td>off</td><td>http, server, location</td><td>启用 HTTP 基本认证</td></tr>
+                        <tr><td><code>auth_basic_user_file</code></td><td>-</td><td>http, server, location</td><td>用户密码文件路径</td></tr>
+                        <tr><td><code>auth_request</code></td><td>-</td><td>http, server, location</td><td>子请求认证</td></tr>
+                        <tr><td><code>auth_request_set</code></td><td>-</td><td>http, server, location</td><td>设置子请求认证变量</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">连接和请求限制</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>limit_conn_zone</code></td><td>-</td><td>http</td><td>定义连接限制区域</td></tr>
                         <tr><td><code>limit_conn</code></td><td>-</td><td>http, server, location</td><td>限制连接数</td></tr>
+                        <tr><td><code>limit_conn_status</code></td><td>503</td><td>http, server, location</td><td>连接超限状态码</td></tr>
+                        <tr><td><code>limit_req_zone</code></td><td>-</td><td>http</td><td>定义请求限制区域</td></tr>
                         <tr><td><code>limit_req</code></td><td>-</td><td>http, server, location</td><td>限制请求速率</td></tr>
-                        <tr><td><code>limit_conn_zone</code><td>-</td><td>http</td><td>定义连接限制空间</td></tr>
-                        <tr><td><code>limit_req_zone</code><td>-</td><td>http</td><td>定义请求限制空间</td></tr>
+                        <tr><td><code>limit_req_status</code></td><td>503</td><td>http, server, location</td><td>请求超限状态码</td></tr>
+                        <tr><td><code>limit_req_dry_run</code></td><td>off</td><td>http, server, location</td><td>限流测试模式</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
 
-                <h3 class="section-subtitle">文件上传指令</h3>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">请求处理指令</h2>
+
+                <h3 class="section-subtitle">请求体控制</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>client_max_body_size</code><td>1m</td><td>http, server, location</td><td>最大请求体大小</td></tr>
-                        <tr><td><code>client_body_buffer_size</code><td>8k/16k</td><td>http, server, location</td><td>请求体缓冲区大小</td></tr>
-                        <tr><td><code>client_body_timeout</code><td>60</td><td>http, server, location</td><td>请求体读取超时</td></tr>
-                        <tr><td><code>client_header_timeout</code><td>60</td><td>http, server, location</td><td>请求头读取超时</td></tr>
+                        <tr><td><code>client_max_body_size</code></td><td>1m</td><td>http, server, location</td><td>最大请求体大小</td></tr>
+                        <tr><td><code>client_body_buffer_size</code></td><td>8k/16k</td><td>http, server, location</td><td>请求体缓冲区大小</td></tr>
+                        <tr><td><code>client_body_timeout</code></td><td>60s</td><td>http, server, location</td><td>请求体读取超时</td></tr>
+                        <tr><td><code>client_header_timeout</code></td><td>60s</td><td>http, server, location</td><td>请求头读取超时</td></tr>
+                        <tr><td><code>client_body_temp_path</code></td><td>client_body_temp</td><td>http, server</td><td>请求体临时文件路径</td></tr>
+                        <tr><td><code>client_body_in_file_only</code></td><td>off</td><td>http, server, location</td><td>请求体是否存入文件</td></tr>
                     </tbody>
                 </table>
 
-                <h3 class="section-subtitle">变量相关指令</h3>
+                <h3 class="section-subtitle">重定向和重写</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>return</code></td><td>-</td><td>server, location, if</td><td>返回状态码或重定向</td></tr>
+                        <tr><td><code>rewrite</code></td><td>-</td><td>server, location, if</td><td>URL 重写</td></tr>
+                        <tr><td><code>rewrite_log</code></td><td>off</td><td>http, server, location</td><td>重写日志</td></tr>
+                        <tr><td><code>error_page</code></td><td>-</td><td>http, server, location</td><td>自定义错误页面</td></tr>
+                        <tr><td><code>postpone_output</code></td><td>1460</td><td>http, server, location</td><td>延迟输出大小</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">条件判断</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>if</code></td><td>-</td><td>server, location</td><td>条件判断</td></tr>
+                        <tr><td><code>set</code></td><td>-</td><td>server, location, if</td><td>设置变量值</td></tr>
+                        <tr><td><code>break</code></td><td>-</td><td>server, location, if</td><td>停止重写处理</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">变量和映射指令</h2>
+
+                <h3 class="section-subtitle">变量定义</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
@@ -544,468 +428,456 @@
                     <tbody>
                         <tr><td><code>set</code></td><td>-</td><td>server, location, if</td><td>定义变量</td></tr>
                         <tr><td><code>map</code></td><td>-</td><td>http</td><td>创建变量映射</td></tr>
-                        <tr><td><code>geo</code></td><td>-</td><td>http</td><td>基于IP定义变量</td></tr>
+                        <tr><td><code>geo</code></td><td>-</td><td>http</td><td>基于 IP 定义变量</td></tr>
+                        <tr><td><code>geoip_country</code></td><td>-</td><td>http</td><td>GeoIP 国家数据库</td></tr>
+                        <tr><td><code>geoip_city</code></td><td>-</td><td>http</td><td>GeoIP 城市数据库</td></tr>
                     </tbody>
                 </table>
 
-                <h3 class="section-subtitle">缓冲相关指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>proxy_buffering</code><td>on</td><td>http, server, location</td><td>启用代理缓冲</td></tr>
-                        <tr><td><code>proxy_buffers</code><td>8 4k/8k</td><td>http, server, location</td><td>代理缓冲区数量和大小</td></tr>
-                        <tr><td><code>proxy_buffer_size</code><td>4k/8k</td><td>http, server, location</td><td>代理缓冲区大小</td></tr>
-                        <tr><td><code>fastcgi_buffering</code><td>on</td><td>http, server, location</td><td>启用FastCGI缓冲</td></tr>
-                        <tr><td><code>fastcgi_buffers</code><td>8 4k/8k</td><td>http, server, location</td><td>FastCGI缓冲区</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">重定向指令</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>redirect</code></td><td>-</td><td>location</td><td>302临时重定向</td></tr>
-                        <tr><td><code>permanent</code></td><td>-</td><td>location</td><td>301永久重定向</td></tr>
-                        <tr><td><code>rewrite</code></td><td>-</td><td>server, location</td><td>URL重写</td></tr>
-                        <tr><td><code>error_page</code></td><td>-</td><td>http, server, location</td><td>自定义错误页面</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    <script src="/tmp/scripts.js"></script>
-        <section class="section bg-light">
-            <div class="container">
-                <h2 class="section-title">指令常用参数值</h2>
-                
-                <h3 class="section-subtitle">worker_processes 参数值</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>值</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>1</code></td><td>默认值，单进程模式</td></tr>
-                        <tr><td><code>auto</code></td><td>自动检测CPU核心数</td></tr>
-                        <tr><td><code>2, 4, 8...</code></td><td>指定进程数量</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">error_log 级别值</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>级别</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>debug</code></td><td>调试信息</td></tr>
-                        <tr><td><code>info</code></td><td>信息消息</td></tr>
-                        <tr><td><code>notice</code></td><td>通知消息</td></tr>
-                        <tr><td><code>warn</code></td><td>警告消息</td></tr>
-                        <tr><td><code>error</code></td><td>错误消息（默认）</td></tr>
-                        <tr><td><code>crit</code></td><td>严重错误</td></tr>
-                        <tr><td><code>alert</code></td><td>警报</td></tr>
-                        <tr><td><code>emerg</code></td><td>紧急情况</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">location 匹配优先级</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>优先级</th><th>匹配规则</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1</td><td><code>= /path</code></td><td>精确匹配，优先级最高</td></tr>
-                        <tr><td>2</td><td><code>^~ /path</code></td><td>前缀匹配，停止正则搜索</td></tr>
-                        <tr><td>3</td><td><code>~ pattern</code></td><td>正则匹配（区分大小写）</td></tr>
-                        <tr><td>4</td><td><code>~* pattern</code></td><td>正则匹配（不区分大小写）</td></tr>
-                        <tr><td>5</td><td><code>/path</code></td><td>前缀匹配，优先级最低</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">proxy_set_header 常用值</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>参数</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>Host $host</code></td><td>传递原始Host头</td></tr>
-                        <tr><td><code>X-Real-IP $remote_addr</code></td><td>传递客户端真实IP</td></tr>
-                        <tr><td><code>X-Forwarded-For $proxy_add_x_forwarded_for</code></td><td>传递代理链路</td></tr>
-                        <tr><td><code>X-Forwarded-Proto $scheme</code></td><td>传递原始协议</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">gzip 常用参数值</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>参数</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>gzip_types text/plain text/css application/json</code></td><td>指定压缩类型</td></tr>
-                        <tr><td><code>gzip_min_length 1000</code></td><td>最小压缩文件大小</td></tr>
-                        <tr><td><code>gzip_disable "msie6"</code></td><td>禁用特定浏览器压缩</td></tr>
-                        <tr><td><code>gzip_proxied any</code></td><td>对代理响应压缩</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">upstream server 参数值</h3>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>参数</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>weight=3</code></td><td>权重值</td></tr>
-                        <tr><td><code>max_fails=3</code></td><td>最大失败次数</td></tr>
-                        <tr><td><code>fail_timeout=30s</code></td><td>失败超时时间</td></tr>
-                        <tr><td><code>backup</code></td><td>备份服务器</td></tr>
-                        <tr><td><code>down</code></td><td>标记服务器离线</td></tr>
-                        <tr><td><code>max_conns=100</code></td><td>最大连接数</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">常用变量</h3>
+                <h3 class="section-subtitle">常用内置变量</h3>
                 <table class="info-table">
                     <thead>
                         <tr><th>变量</th><th>说明</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>$remote_addr</code></td><td>客户端IP地址</td></tr>
-                        <tr><td><code>$remote_user</code></td><td>客户端用户名</td></tr>
-                        <tr><td><code>$request_uri</code></td><td>完整的请求URI</td></tr>
-                        <tr><td><code>$request_method</code></td><td>请求方法</td></tr>
-                        <tr><td><code>$http_user_agent</code></td><td>客户端User-Agent</td></tr>
+                        <tr><td><code>$remote_addr</code></td><td>客户端 IP 地址</td></tr>
+                        <tr><td><code>$remote_user</code></td><td>客户端用户名（认证时）</td></tr>
+                        <tr><td><code>$request_uri</code></td><td>完整的请求 URI（带参数）</td></tr>
+                        <tr><td><code>$uri</code></td><td>当前请求 URI（不含参数）</td></tr>
+                        <tr><td><code>$request_method</code></td><td>请求方法（GET/POST 等）</td></tr>
+                        <tr><td><code>$http_user_agent</code></td><td>客户端 User-Agent</td></tr>
                         <tr><td><code>$http_referer</code></td><td>来源页面</td></tr>
-                        <tr><td><code>$scheme</code></td><td>请求协议(http/https)</td></tr>
+                        <tr><td><code>$http_host</code></td><td>请求 Host 头</td></tr>
+                        <tr><td><code>$scheme</code></td><td>请求协议（http/https）</td></tr>
                         <tr><td><code>$server_port</code></td><td>服务器端口</td></tr>
+                        <tr><td><code>$server_name</code></td><td>服务器名称</td></tr>
                         <tr><td><code>$host</code></td><td>请求主机名</td></tr>
                         <tr><td><code>$request_time</code></td><td>请求处理时间</td></tr>
                         <tr><td><code>$status</code></td><td>响应状态码</td></tr>
-                        <tr><td><code>$body_bytes_sent</code></td><td>发送字节数</td></tr>
+                        <tr><td><code>$body_bytes_sent</code></td><td>发送的字节数</td></tr>
+                        <tr><td><code>$bytes_sent</code></td><td>发送的总字节数</td></tr>
                         <tr><td><code>$upstream_addr</code></td><td>后端服务器地址</td></tr>
-                        <tr><td><code>$upstream_status</code></td><td>后端响应状态</td></tr>
+                        <tr><td><code>$upstream_status</code></td><td>后端响应状态码</td></tr>
+                        <tr><td><code>$upstream_response_time</code></td><td>后端响应时间</td></tr>
+                        <tr><td><code>$document_root</code></td><td>当前请求的根目录</td></tr>
+                        <tr><td><code>$request_filename</code></td><td>当前请求的文件路径</td></tr>
+                        <tr><td><code>$arg_name</code></td><td>请求参数 name 的值</td></tr>
+                        <tr><td><code>$cookie_name</code></td><td>Cookie 中 name 的值</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">缓存指令</h2>
+
+                <h3 class="section-subtitle">浏览器缓存</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>expires</code></td><td>off</td><td>http, server, location</td><td>设置浏览器缓存过期时间</td></tr>
+                        <tr><td><code>add_header</code></td><td>-</td><td>http, server, location</td><td>添加 HTTP 响应头</td></tr>
+                        <tr><td><code>etag</code></td><td>on</td><td>http, server, location</td><td>启用 ETag</td></tr>
+                        <tr><td><code>last_modified</code></td><td>-</td><td>http, server, location</td><td>设置 Last-Modified 头</td></tr>
                     </tbody>
                 </table>
 
-                <h3 class="section-subtitle">SSL 常用配置</h3>
+                <h3 class="section-subtitle">文件缓存</h3>
                 <table class="info-table">
                     <thead>
-                        <tr><th>参数</th><th>说明</th></tr>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><code>ssl_session_cache shared:SSL:10m</code></td><td>SSL会话缓存</td></tr>
-                        <tr><td><code>ssl_session_timeout 1d</code></td><td>SSL会话超时</td></tr>
-                        <tr><td><code>ssl_prefer_server_ciphers on</code></td><td>优先使用服务器加密套件</td></tr>
-                        <tr><td><code>ssl_ciphers HIGH:!aNULL:!MD5</code></td><td>加密套件列表</td></tr>
-                        <tr><td><code>ssl_stapling on</code></td><td>启用OCSP装订</td></tr>
-                        <tr><td><code>ssl_stapling_verify on</code></td><td>验证OCSP响应</td></tr>
+                        <tr><td><code>open_file_cache</code></td><td>off</td><td>http, server, location</td><td>文件描述符缓存</td></tr>
+                        <tr><td><code>open_file_cache_valid</code></td><td>60s</td><td>http, server, location</td><td>缓存检查间隔</td></tr>
+                        <tr><td><code>open_file_cache_min_uses</code></td><td>1</td><td>http, server, location</td><td>最小使用次数</td></tr>
+                        <tr><td><code>open_file_cache_errors</code></td><td>off</td><td>http, server, location</td><td>缓存错误文件</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">日志指令</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>access_log</code></td><td>logs/access.log</td><td>http, server, location</td><td>访问日志路径</td></tr>
+                        <tr><td><code>log_format</code></td><td>combined</td><td>http</td><td>定义日志格式</td></tr>
+                        <tr><td><code>log_not_found</code></td><td>on</td><td>http, server, location</td><td>是否记录 404 日志</td></tr>
+                        <tr><td><code>log_subrequest</code></td><td>off</td><td>http, server, location</td><td>是否记录子请求日志</td></tr>
+                        <tr><td><code>error_log</code></td><td>logs/error.log</td><td>main, http, server, location</td><td>错误日志路径和级别</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box">
+                    <strong>常用日志格式变量：</strong><br>
+                    <code>$remote_addr</code> - 客户端 IP | 
+                    <code>$time_local</code> - 时间 | 
+                    <code>$request</code> - 请求行 | 
+                    <code>$status</code> - 状态码 | 
+                    <code>$body_bytes_sent</code> - 发送字节数 | 
+                    <code>$http_referer</code> - 来源 | 
+                    <code>$http_user_agent</code> - User-Agent
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">Mirror 镜像指令</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>mirror</code></td><td>off</td><td>location</td><td>启用请求镜像</td></tr>
+                        <tr><td><code>mirror_request_body</code></td><td>on</td><td>location</td><td>是否镜像请求体</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box">
+                    <strong>使用说明：</strong> Mirror 功能用于将请求复制到另一个服务器，常用于生产流量复制到测试环境。镜像请求的响应会被丢弃。
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">FastCGI 指令</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>fastcgi_pass</code></td><td>-</td><td>location</td><td>FastCGI 服务器地址</td></tr>
+                        <tr><td><code>fastcgi_param</code></td><td>-</td><td>http, server, location</td><td>设置 FastCGI 参数</td></tr>
+                        <tr><td><code>fastcgi_index</code></td><td>-</td><td>http, server, location</td><td>默认索引文件</td></tr>
+                        <tr><td><code>fastcgi_connect_timeout</code></td><td>60s</td><td>http, server, location</td><td>连接超时</td></tr>
+                        <tr><td><code>fastcgi_send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送超时</td></tr>
+                        <tr><td><code>fastcgi_read_timeout</code></td><td>60s</td><td>http, server, location</td><td>读取超时</td></tr>
+                        <tr><td><code>fastcgi_buffering</code></td><td>on</td><td>http, server, location</td><td>启用缓冲</td></tr>
+                        <tr><td><code>fastcgi_buffers</code></td><td>8 4k/8k</td><td>http, server, location</td><td>缓冲区</td></tr>
+                        <tr><td><code>fastcgi_buffer_size</code></td><td>4k/8k</td><td>http, server, location</td><td>响应头缓冲区</td></tr>
+                        <tr><td><code>fastcgi_cache</code></td><td>off</td><td>http, server, location</td><td>启用缓存</td></tr>
+                        <tr><td><code>fastcgi_cache_path</code></td><td>-</td><td>http</td><td>缓存路径</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">gRPC 指令</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>grpc_pass</code></td><td>-</td><td>location</td><td>gRPC 服务器地址</td></tr>
+                        <tr><td><code>grpc_set_header</code></td><td>-</td><td>http, server, location</td><td>设置 gRPC 请求头</td></tr>
+                        <tr><td><code>grpc_connect_timeout</code></td><td>60s</td><td>http, server, location</td><td>连接超时</td></tr>
+                        <tr><td><code>grpc_read_timeout</code></td><td>60s</td><td>http, server, location</td><td>读取超时</td></tr>
+                        <tr><td><code>grpc_send_timeout</code></td><td>60s</td><td>http, server, location</td><td>发送超时</td></tr>
+                        <tr><td><code>grpc_buffering</code></td><td>on</td><td>http, server, location</td><td>启用缓冲</td></tr>
+                        <tr><td><code>grpc_ssl_name</code></td><td>-</td><td>http, server, location</td><td>SSL 名称</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">其他常用指令</h2>
+
+                <h3 class="section-subtitle">内部重定向</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>internal</code></td><td>-</td><td>location</td><td>标记为内部请求</td></tr>
+                        <tr><td><code>include</code></td><td>-</td><td>任意</td><td>包含其他配置文件</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">连接保持</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>lingering_close</code></td><td>on</td><td>http, server, location</td><td>延迟关闭连接</td></tr>
+                        <tr><td><code>lingering_time</code></td><td>30s</td><td>http, server, location</td><td>延迟关闭时间</td></tr>
+                        <tr><td><code>lingering_timeout</code></td><td>5s</td><td>http, server, location</td><td>延迟关闭超时</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">其他配置</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>server_tokens</code></td><td>on</td><td>http, server</td><td>是否显示 Nginx 版本</td></tr>
+                        <tr><td><code>types_hash_max_size</code></td><td>1024</td><td>http, server, location</td><td>MIME 类型哈希表大小</td></tr>
+                        <tr><td><code>server_names_hash_bucket_size</code></td><td>32/64/128</td><td>http</td><td>服务器名哈希桶大小</td></tr>
+                        <tr><td><code>limit_rate</code></td><td>0</td><td>http, server, location</td><td>限制响应速率</td></tr>
+                        <tr><td><code>limit_rate_after</code></td><td>0</td><td>http, server, location</td><td>开始限速的字节数</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">常用配置示例</h2>
+
+                <h3 class="section-subtitle">静态文件服务配置</h3>
+                <div class="highlight-box">
+                    <pre>
+server {
+    listen 80;
+    server_name example.com;
+    root /var/www/html;
+    index index.html;
+
+    # 启用压缩
+    gzip on;
+    gzip_types text/plain text/css application/json;
+
+    # 浏览器缓存
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}</pre>
+                </div>
+
+                <h3 class="section-subtitle">反向代理配置</h3>
+                <div class="highlight-box">
+                    <pre>
+server {
+    listen 80;
+    server_name api.example.com;
+
+    location / {
+        proxy_pass http://backend:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}</pre>
+                </div>
+
+                <h3 class="section-subtitle">负载均衡配置</h3>
+                <div class="highlight-box">
+                    <pre>
+upstream backend {
+    least_conn;
+    server 192.168.1.1:8080 weight=3;
+    server 192.168.1.2:8080;
+    server 192.168.1.3:8080 backup;
+}
+
+server {
+    listen 80;
+    server_name app.example.com;
+
+    location / {
+        proxy_pass http://backend;
+    }
+}</pre>
+                </div>
+
+                <h3 class="section-subtitle">HTTPS 配置</h3>
+                <div class="highlight-box">
+                    <pre>
+server {
+    listen 443 ssl http2;
+    server_name secure.example.com;
+
+    ssl_certificate /etc/nginx/ssl/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    location / {
+        proxy_pass http://backend;
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🆕 近年新增指令（2020-2026）</h2>
+                <p class="page-intro">以下是 Nginx 从 2020 年到 2026 年版本中新增的真实有效指令</p>
+
+                <div class="note-box">
+                    <strong>版本说明：</strong> Nginx 分为稳定版（如 1.18.x、1.20.x、1.22.x、1.24.x、1.26.x）和主线版（如 1.19.x-1.21.x、1.23.x-1.25.x、1.27.x-1.29.x）。新特性通常在主线版中引入。
+                </div>
+
+                <h3 class="section-subtitle">2025 年新增指令（1.27.x - 1.29.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>ssl_ech_file</code></td><td>1.29.4</td><td>http, server</td><td>Encrypted ClientHello (ECH) TLS 扩展支持</td></tr>
+                        <tr><td><code>add_header_inherit</code></td><td>1.29.3</td><td>http, server, location</td><td>继承并添加响应头</td></tr>
+                        <tr><td><code>add_trailer_inherit</code></td><td>1.29.3</td><td>http, server, location</td><td>继承并添加尾部头</td></tr>
+                        <tr><td><code>ssl_certificate_compression</code></td><td>1.29.1</td><td>http, server</td><td>SSL 证书压缩</td></tr>
+                        <tr><td><code>early_hints</code></td><td>1.29.0</td><td>http, server, location</td><td>支持来自代理和 gRPC 后端的 103 响应</td></tr>
+                        <tr><td><code>ssl_object_cache_inheritable</code></td><td>1.27.4</td><td>http</td><td>SSL 对象缓存可继承</td></tr>
+                        <tr><td><code>ssl_certificate_cache</code></td><td>1.27.4</td><td>http</td><td>SSL 证书缓存</td></tr>
+                        <tr><td><code>proxy_ssl_certificate_cache</code></td><td>1.27.4</td><td>http</td><td>代理 SSL 证书缓存</td></tr>
+                        <tr><td><code>grpc_ssl_certificate_cache</code></td><td>1.27.4</td><td>http</td><td>gRPC SSL 证书缓存</td></tr>
+                        <tr><td><code>uwsgi_ssl_certificate_cache</code></td><td>1.27.4</td><td>http</td><td>uWSGI SSL 证书缓存</td></tr>
+                        <tr><td><code>keepalive_min_timeout</code></td><td>1.27.4</td><td>http, server</td><td>最小保活超时时间</td></tr>
+                        <tr><td><code>resolver</code> (upstream 块)</td><td>1.27.3</td><td>upstream</td><td>上游服务器 DNS 解析器配置</td></tr>
+                        <tr><td><code>resolver_timeout</code> (upstream 块)</td><td>1.27.3</td><td>upstream</td><td>上游 DNS 解析超时</td></tr>
+                        <tr><td><code>server ... resolve</code></td><td>1.27.3</td><td>upstream</td><td>动态解析上游服务器地址</td></tr>
+                        <tr><td><code>proxy_pass_trailers</code></td><td>1.27.2</td><td>http, server, location</td><td>传递 HTTP 尾部头</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">2024 年新增指令（1.25.x - 1.27.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>proxy_limit_rate</code> (支持变量)</td><td>1.27.0</td><td>http, server, location</td><td>代理速率限制支持变量</td></tr>
+                        <tr><td><code>fastcgi_limit_rate</code> (支持变量)</td><td>1.27.0</td><td>http, server, location</td><td>FastCGI 速率限制支持变量</td></tr>
+                        <tr><td><code>scgi_limit_rate</code> (支持变量)</td><td>1.27.0</td><td>http, server, location</td><td>SCGI 速率限制支持变量</td></tr>
+                        <tr><td><code>uwsgi_limit_rate</code> (支持变量)</td><td>1.27.0</td><td>http, server, location</td><td>uWSGI 速率限制支持变量</td></tr>
+                        <tr><td><code>http2</code></td><td>1.25.1</td><td>server</td><td>按服务器启用 HTTP/2（替代 listen 的 http2 参数）</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>🌐 HTTP/3 支持：</strong> Nginx 1.25.0 开始提供实验性 HTTP/3 支持，使用 <code>listen ... quic</code> 参数启用。
+                </div>
+
+                <h3 class="section-subtitle">2023 年新增指令（1.23.x - 1.25.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>$proxy_protocol_tlv_...</code></td><td>1.23.2</td><td>-</td><td>PROXY 协议 TLV 变量</td></tr>
+                        <tr><td><code>resolver ... ipv4=off</code></td><td>1.23.1</td><td>http, server</td><td>禁用 IPv4 地址查找</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">2022 年新增指令（1.21.x - 1.23.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>$ssl_curve</code></td><td>1.21.5</td><td>-</td><td>SSL 曲线变量</td></tr>
+                        <tr><td><code>proxy_half_close</code></td><td>1.21.4</td><td>stream</td><td>Stream 代理半关闭支持</td></tr>
+                        <tr><td><code>ssl_alpn</code></td><td>1.21.4</td><td>stream</td><td>Stream ALPN 协议设置</td></tr>
+                        <tr><td><code>$ssl_alpn_protocol</code></td><td>1.21.4</td><td>-</td><td>SSL ALPN 协议变量</td></tr>
+                        <tr><td><code>mp4_start_key_frame</code></td><td>1.21.4</td><td>location</td><td>MP4 从关键帧开始</td></tr>
+                        <tr><td><code>proxy_ssl_certificate</code> (支持变量)</td><td>1.21.0</td><td>http, server, location</td><td>代理 SSL 证书支持变量</td></tr>
+                        <tr><td><code>grpc_ssl_certificate</code> (支持变量)</td><td>1.21.0</td><td>http, server, location</td><td>gRPC SSL 证书支持变量</td></tr>
+                        <tr><td><code>uwsgi_ssl_certificate</code> (支持变量)</td><td>1.21.0</td><td>http, server, location</td><td>uWSGI SSL 证书支持变量</td></tr>
+                        <tr><td><code>max_errors</code></td><td>1.21.0</td><td>mail</td><td>邮件代理最大错误数</td></tr>
+                        <tr><td><code>listen ... fastopen</code></td><td>1.21.0</td><td>stream</td><td>TCP Fast Open 支持</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">2021 年新增指令（1.19.x - 1.21.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>keepalive_time</code></td><td>1.19.10</td><td>http, server</td><td>保活连接最大使用时间</td></tr>
+                        <tr><td><code>$connection_time</code></td><td>1.19.10</td><td>-</td><td>连接时间变量</td></tr>
+                        <tr><td><code>proxy_cookie_flags</code> (支持变量)</td><td>1.19.8</td><td>http, server, location</td><td>代理 Cookie 标志支持变量</td></tr>
+                        <tr><td><code>-e</code></td><td>1.19.5</td><td>命令行</td><td>启动时指定错误日志文件</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 class="section-subtitle">2020 年新增指令（1.17.x - 1.19.x）</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>指令</th><th>版本</th><th>作用域</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>ssl_conf_command</code></td><td>1.19.4</td><td>http, server</td><td>SSL 配置命令（OpenSSL 配置）</td></tr>
+                        <tr><td><code>proxy_ssl_conf_command</code></td><td>1.19.4</td><td>http, server, location</td><td>代理 SSL 配置命令</td></tr>
+                        <tr><td><code>grpc_ssl_conf_command</code></td><td>1.19.4</td><td>http, server, location</td><td>gRPC SSL 配置命令</td></tr>
+                        <tr><td><code>uwsgi_ssl_conf_command</code></td><td>1.19.4</td><td>http, server, location</td><td>uWSGI SSL 配置命令</td></tr>
+                        <tr><td><code>ssl_reject_handshake</code></td><td>1.19.4</td><td>http, server</td><td>拒绝 SSL 握手</td></tr>
+                        <tr><td><code>proxy_smtp_auth</code></td><td>1.19.4</td><td>mail</td><td>邮件代理 SMTP 认证</td></tr>
+                        <tr><td><code>proxy_cookie_flags</code></td><td>1.19.3</td><td>http, server, location</td><td>代理 Cookie 标志</td></tr>
+                        <tr><td><code>userid_flags</code></td><td>1.19.3</td><td>http, server, location</td><td>用户 ID 标志</td></tr>
+                        <tr><td><code>auth_delay</code></td><td>1.17.10</td><td>http, server, location</td><td>认证延迟（防止暴力破解）</td></tr>
+                        <tr><td><code>grpc_pass</code> (支持变量)</td><td>1.17.8</td><td>location</td><td>gRPC 代理地址支持变量</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="note-box">
+                    <strong>📈 发展趋势：</strong>
+                    <ul>
+                        <li><strong>HTTP/3 支持</strong> - 1.25.0 开始实验性支持 QUIC 和 HTTP/3</li>
+                        <li><strong>SSL/TLS 增强</strong> - ECH 加密、证书压缩、OCSP、硬件令牌支持</li>
+                        <li><strong>动态上游解析</strong> - upstream 块支持 DNS 动态解析</li>
+                        <li><strong>变量支持扩展</strong> - 更多指令支持变量，配置更灵活</li>
+                        <li><strong>性能优化</strong> - SSL 缓存、连接处理、HTTP/2 优化</li>
+                    </ul>
+                </div>
+
+                <h3 class="section-subtitle">新增变量汇总</h3>
+                <table class="info-table">
+                    <thead>
+                        <tr><th>变量</th><th>版本</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>$request_port</code></td><td>1.29.3</td><td>请求端口</td></tr>
+                        <tr><td><code>$is_request_port</code></td><td>1.29.3</td><td>请求端口判断</td></tr>
+                        <tr><td><code>$ssl_sigalg</code></td><td>1.29.3</td><td>SSL 签名算法</td></tr>
+                        <tr><td><code>$ssl_client_sigalg</code></td><td>1.29.3</td><td>客户端 SSL 签名算法</td></tr>
+                        <tr><td><code>$ssl_curve</code></td><td>1.21.5</td><td>SSL 曲线</td></tr>
+                        <tr><td><code>$ssl_alpn_protocol</code></td><td>1.21.4</td><td>SSL ALPN 协议</td></tr>
+                        <tr><td><code>$connection_time</code></td><td>1.19.10</td><td>连接时间</td></tr>
+                        <tr><td><code>$proxy_protocol_tlv_...</code></td><td>1.23.2</td><td>PROXY 协议 TLV 变量</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
-                <h3 class="section-subtitle">2018-2024年新增指令（演进特性）</h3>
-                <p class="page-intro">以下指令反映2018-2024年间nginx版本中的重要功能演进和新特性</p>
-
-                <h4 class="section-subtitle">2018-2019年：TLS 1.3 和性能优化</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>ssl_protocols</code></td><td>TLSv1.2 TLSv1.3</td><td>http, server</td><td>支持的TLS协议（2019年TLS 1.3支持）</td></tr>
-                        <tr><td><code>ssl_session_tickets</code></td><td>off</td><td>http, server</td><td>SSL会话票证（2019年增强）</td></tr>
-                        <tr><td><code>ssl_early_data</code></td><td>off</td><td>http, server, location</td><td>0-RTT数据支持（2018年）</td></tr>
-                        <tr><td><code>ssl_conf_command</code></td><td>-</td><td>http, server</td><td>SSL配置命令（2018年增强）</td></tr>
-                        <tr><td><code>tcp_nodelay</code></td><td>on</td><td>http, server, location</td><td>TCP_NODELAY优化（2019年）</td></tr>
-                        <tr><td><code>limit_req_zone</code></td><td>-</td><td>http</td><td>请求限制区域（2019年增强）</td></tr>
-                        <tr><td><code>limit_conn_zone</code></td><td>-</td><td>http</td><td>连接限制区域（2019年增强）</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">2020年：远程工作和流量管理</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>remote_work_optimization</code></td><td>adaptive</td><td>http, server, location</td><td>远程工作优化（2020疫情相关）</td></tr>
-                        <tr><td><code>bandwidth_adaptation</code></td><td>auto</td><td>http, server, location</td><td>带宽自适应（2020年）</td></tr>
-                        <tr><td><code>video_optimization</code></td><td>on</td><td>http, server, location</td><td>视频流优化（2020年）</td></tr>
-                        <tr><td><code>quality_adaptive</code></td><td>off</td><td>http, server, location</td><td>质量自适应传输（2020年）</td></tr>
-                        <tr><td><code>covid19_protection</code></td><td>basic</td><td>http, server</td><td>疫情相关防护（2020年特殊功能）</td></tr>
-                        <tr><td><code>work_from_home</code></td><td>optimized</td><td>http, server, location</td><td>居家办公优化（2020年）</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">2021年：微服务和服务网格</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>service_mesh</code></td><td>off</td><td>http, server, location</td><td>服务网格集成（2021年）</td></tr>
-                        <tr><td><code>microservices_gateway</code></td><td>auto</td><td>http, server</td><td>微服务网关（2021年）</td></tr>
-                        <tr><td><code>service_discovery</code></td><td>kubernetes</td><td>http, server</td><td>服务发现（2021年增强）</td></tr>
-                        <tr><td><code>circuit_breaker</code></td><td>off</td><td>http, server, location</td><td>熔断器模式（2021年）</td></tr>
-                        <tr><td><code>load_balancing_v2</code></td><td>round_robin</td><td>upstream</td><td>第二代负载均衡（2021年）</td></tr>
-                        <tr><td><code>api_gateway</code></td><td>off</td><td>http, server</td><td>API网关功能（2021年）</td></tr>
-                        <tr><td><code>grpc_proxy</code></td><td>off</td><td>http, server, location</td><td>gRPC代理支持（2021年）</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">2022年：边缘计算和CDN增强</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>edge_computing_v2</code></td><td>auto</td><td>http, server, location</td><td>边缘计算v2（2022年）</td></tr>
-                        <tr><td><code>cdn_integration</code></td><td>adaptive</td><td>http, server</td><td>CDN深度集成（2022年）</td></tr>
-                        <tr><td><code>geo_optimization</code></td><td>on</td><td>http, server, location</td><td>地理位置优化（2022年）</td></tr>
-                        <tr><td><code>edge_caching</code></td><td>smart</td><td>http, server, location</td><td>智能边缘缓存（2022年）</td></tr>
-                        <tr><td><code>serverless_support</code></td><td>lambda</td><td>http, server, location</td><td>Serverless支持（2022年）</td></tr>
-                        <tr><td><code>function_proxy</code></td><td>off</td><td>http, server, location</td><td>函数代理（2022年）</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">2023年：AI集成和智能优化</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>ai_optimization</code></td><td>adaptive</td><td>http, server, location</td><td>AI驱动的优化（2023年）</td></tr>
-                        <tr><td><code>smart_routing</code></td><td>on</td><td>http, server, location</td><td>智能路由（2023年）</td></tr>
-                        <tr><td><code>predictive_caching</code></td><td>off</td><td>http, server, location</td><td>预测性缓存（2023年）</td></tr>
-                        <tr><td><code>machine_learning</code></td><td>basic</td><td>http, server, location</td><td>机器学习集成（2023年）</td></tr>
-                        <tr><td><code>neural_network</code></td><td>off</td><td>http, server, location</td><td>神经网络加速（2023年）</td></tr>
-                        <tr><td><code>real_time_analytics</code></td><td>on</td><td>http, server, location</td><td>实时分析（2023年）</td></tr>
-                        <tr><td><code>ai_security</code></td><td>enhanced</td><td>http, server, location</td><td>AI增强安全（2023年）</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">2024年：零信任安全和量子预备</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>zero_trust_model</code></td><td>adaptive</td><td>http, server, location</td><td>零信任安全模型（2024年）</td></tr>
-                        <tr><td><code>quantum_resistant</code></td><td>off</td><td>http, server, location</td><td>量子抗性加密（2024年预备）</td></tr>
-                        <tr><td><code>blockchain_verification</code></td><td>off</td><td>http, server, location</td><td>区块链验证（2024年）</td></tr>
-                        <tr><td><code>decentralized_identity</code></td><td>off</td><td>http, server, location</td><td>去中心化身份（2024年）</td></tr>
-                        <tr><td><code>privacy_enhanced</code></td><td>on</td><td>http, server, location</td><td>隐私增强技术（2024年）</td></tr>
-                        <tr><td><code>data_sovereignty</code></td><td>compliant</td><td>http, server</td><td>数据主权合规（2024年）</td></tr>
-                        <tr><td><code>ethical_ai</code></td><td>on</td><td>http, server, location</td><td>负责任AI（2024年）</td></tr>
-                    </tbody>
-                </table>
-                <p class="page-intro">以下指令反映2024-2026年nginx版本中的最新特性和功能升级</p>
-
-                <h4 class="section-subtitle">OpenTelemetry 和可观测性</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>opentelemetry</code></td><td>off</td><td>http, server, location</td><td>启用OpenTelemetry追踪</td></tr>
-                        <tr><td><code>opentelemetry_traces</code></td><td>on</td><td>http, server, location</td><td>启用分布式追踪</td></tr>
-                        <tr><td><code>opentelemetry_exporter</code></td><td>otlp://localhost:4317</td><td>http</td><td>OpenTelemetry导出器配置</td></tr>
-                        <tr><td><code>opentelemetry_sampling_ratio</code></td><td>1.0</td><td>http, server, location</td><td>采样率(0.0-1.0)</td></tr>
-                        <tr><td><code>metrics_enabled</code></td><td>on</td><td>http, server, location</td><td>启用Prometheus指标</td></tr>
-                        <tr><td><code>metrics_endpoint</code></td><td>/metrics</td><td>http, server, location</td><td>指标端点路径</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">HTTP/3 和 QUIC 支持</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>http3</code></td><td>on</td><td>http, server</td><td>启用HTTP/3支持</td></tr>
-                        <tr><td><code>quic_connection_idle_timeout</code></td><td>60s</td><td>http, server, location</td><td>QUIC连接空闲超时</td></tr>
-                        <tr><td><code>quic_max_idle_timeout</code></td><td>300s</td><td>http, server, location</td><td>最大空闲超时</td></tr>
-                        <tr><td><code>quic_initial_max_data</code></td><td>1m</td><td>http, server, location</td><td>初始最大数据量</td></tr>
-                        <tr><td><code>quic_initial_max_stream_data</code></td><td>256k</td><td>http, server, location</td><td>初始流数据量</td></tr>
-                        <tr><td><code>quic_ack_delay_exponent</code></td><td>3</td><td>http, server, location</td><td>确认延迟指数</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">WebAssembly 支持</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>wasm_module</code></td><td>-</td><td>http, server, location</td><td>加载WebAssembly模块</td></tr>
-                        <tr><td><code>wasm_handler</code></td><td>-</td><td>location</td><td>指定WASM处理程序</td></tr>
-                        <tr><td><code>wasm_filter</code></td><td>-</td><td>http, server, location</td><td>应用WASM过滤器</td></tr>
-                        <tr><td><code>wasm_memory_limit</code></td><td>128m</td><td>http, server, location</td><td>WASM内存限制</td></tr>
-                        <tr><td><code>wasm_execution_timeout</code></td><td>5s</td><td>http, server, location</td><td>WASM执行超时</td></tr>
-                        <tr><td><code>wasm_cache_size</code></td><td>256m</td><td>http</td><td>WASM缓存大小</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">AI/ML 和边缘计算</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>ml_model</code></td><td>-</td><td>http, server, location</td><td>加载机器学习模型</td></tr>
-                        <tr><td><code>ml_prediction_endpoint</code></td><td>-</td><td>location</td><td>预测服务端点</td></tr>
-                        <tr><td><code>ml_inference_timeout</code></td><td>3s</td><td>http, server, location</td><td>推理超时时间</td></tr>
-                        <tr><td><code>edge_computing</code></td><td>off</td><td>http, server</td><td>启用边缘计算</td></tr>
-                        <tr><td><code>edge_region</code></td><td>default</td><td>http, server</td><td>边缘计算区域</td></tr>
-                        <tr><td><code>edge_ttl</code></td><td>300s</td><td>http, server, location</td><td>边缘缓存TTL</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">新一代缓存和内容分发</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>cdn_cache</code></td><td>off</td><td>http, server, location</td><td>启用CDN缓存</td></tr>
-                        <tr><td><code>cdn_cache_key</code></td><td>$scheme$request_method$host$request_uri</td><td>http, server, location</td><td>CDN缓存键</td></tr>
-                        <tr><td><code>adaptive_cache</code></td><td>on</td><td>http, server, location</td><td>启用自适应缓存</td></tr>
-                        <tr><td><code>edge_cache</code></td><td>off</td><td>http, server, location</td><td>边缘缓存配置</td></tr>
-                        <tr><td><code>content_delivery</code></td><td>auto</td><td>http, server</td><td>内容分发策略</td></tr>
-                        <tr><td><code>geo_blocking</code></td><td>off</td><td>http, server, location</td><td>地理位置访问控制</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">安全和隐私保护</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>privacy_mode</code></td><td>off</td><td>http, server, location</td><td>隐私模式（隐藏敏感信息）</td></tr>
-                        <tr><td><code>gdpr_compliance</code></td><td>off</td><td>http, server, location</td><td>GDPR合规配置</td></tr>
-                        <tr><td><code>data_retention_policy</code></td><td>30d</td><td>http, server</td><td>数据保留策略</td></tr>
-                        <tr><td><code>secure_headers</code></td><td>on</td><td>http, server, location</td><td>安全HTTP头</td></tr>
-                        <tr><td><code>zero_trust</code></td><td>off</td><td>http, server, location</td><td>零信任安全模型</td></tr>
-                        <tr><td><code>ai_threat_detection</code></td><td>on</td><td>http, server, location</td><td>AI威胁检测</td></tr>
-                        <tr><td><code>bot_protection</code></td><td>adaptive</td><td>http, server, location</td><td>机器人防护</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">云原生和Kubernetes集成</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>kubernetes</code></td><td>off</td><td>http, server</td><td>启用Kubernetes集成</td></tr>
-                        <tr><td><code>k8s_service_discovery</code></td><td>auto</td><td>http, server</td><td>K8s服务发现</td></tr>
-                        <tr><td><code>service_mesh</code></td><td>off</td><td>http, server, location</td><td>服务网格支持</td></tr>
-                        <tr><td><code>microgateway</code></td><td>off</td><td>http, server</td><td>微网关配置</td></tr>
-                        <tr><td><code>autoscaling</code></td><td>adaptive</td><td>http, server</td><td>自动扩缩容策略</td>
-                        <tr><td><code>cloud_provider</code></td><td>auto</td><td>http, server</td><td>云提供商配置</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">2026年新增指令（最新特性）</h3>
-                <p class="page-intro">以下指令反映2024-2026年nginx版本中的最新特性和功能升级</p>
-
-                <h4 class="section-subtitle">2026年技术趋势指令</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>quantum_encryption</code></td><td>off</td><td>http, server, location</td><td>量子加密支持</td></tr>
-                        <tr><td><code>quantum_key_exchange</code></td><td>off</td><td>http, server, location</td><td>量子密钥交换</td></tr>
-                        <tr><td><code>quantum_resistant</code></td><td>off</td><td>http, server, location</td><td>量子抗性算法</td></tr>
-                        <tr><td><code>edge_ai_inference</code></td><td>on</td><td>http, server, location</td><td>边缘AI推理</td></tr>
-                        <tr><td><code>neural_optimization</code></td><td>adaptive</td><td>http, server, location</td><td>神经网络优化</td></tr>
-                        <tr><td><code>quantum_computing_support</code></td><td>off</td><td>http, server, location</td><td>量子计算支持</td></tr>
-                    </tbody>
-                </table>
-
-                <h3 class="section-subtitle">镜像和请求复制功能指令</h3>
-                <p class="page-intro">以下指令用于请求镜像、流量复制、负载均衡和调试等高级功能</p>
-
-                <h4 class="section-subtitle">Mirror 指令及镜像功能</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>mirror</code></td><td>off</td><td>location, if</td><td>请求镜像（将请求复制到指定服务器）</td></tr>
-                        <tr><td><code>mirror_request_body</code></td><td>on</td><td>location, if</td><td>镜像请求体内容</td></tr>
-                        <tr><td><code>mirror_response_body</code></td><td>off</td><td>location, if</td><td>镜像响应体内容</td></tr>
-                        <tr><td><code>mirror_timeout</code></td><td>60s</td><td>location, if</td><td>镜像请求超时时间</td></tr>
-                        <tr><td><code>mirror_retry</code></td><td>3</td><td>location, if</td><td>镜像重试次数</td></tr>
-                        <tr><td><code>mirror_off</code></td><td>-</td><td>location, if</td><td>禁用镜像功能</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">请求镜像和复制功能</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>proxy_mirror</code></td><td>-</td><td>location</td><td>代理镜像请求</td></tr>
-                        <tr><td><code>fastcgi_mirror</code></td><td>-</td><td>location</td><td>FastCGI镜像请求</td></tr>
-                        <tr><td><code>grpc_mirror</code></td><td>-</td><td>location</td><td>gRPC镜像请求</td></tr>
-                        <tr><td><code>mirror_pass</code></td><td>-</td><td>location, if</td><td>镜像目标地址</td></tr>
-                        <tr><td><code>mirror_set_header</code></td><td>-</td><td>location, if</td><td>设置镜像请求头</td></tr>
-                        <tr><td><code>mirror_method</code></td><td>mirror</td><td>location, if</td><td>镜像请求方法</td></tr>
-                        <tr><td><code>mirror_buffer_size</code></td><td>4k/8k</td><td>location, if</td><td>镜像缓冲区大小</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">监控和调试相关指令</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>debug_connection</code></td><td>-</td><td>main, events, http</td><td>调试连接（只记录指定客户端的日志）</td></tr>
-                        <tr><td><code>debug_points</code></td><td>-</td><td>main</td><td>调试断点设置</td></tr>
-                        <tr><td><code>enable_debug_points</code></td><td>off</td><td>main</td><td>启用调试断点</td></tr>
-                        <tr><td><code>debug_log</code></td><td>logs/debug.log</td><td>main, http, server, location</td><td>调试日志路径</td></tr>
-                        <tr><td><code>trace</code></td><td>off</td><td>http, server, location</td><td>启用请求跟踪</td></tr>
-                        <tr><td><code>trace_id</code></td><td>-</td><td>http, server, location</td><td>跟踪ID设置</td></tr>
-                        <tr><td><code>debug_port</code></td><td>127.0.0.1:5858</td><td>main</td><td>调试端口</td></tr>
-                    </tbody>
-                </table>
-
-                <h4 class="section-subtitle">请求分流和复制指令</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>split_clients</code></td><td>-</td><td>http</td><td>客户端分流（基于变量的分流）</td></tr>
-                        <tr><td><code>try_files</code></td><td>-</td><td>server, location</td><td>按顺序尝试文件（支持多个目标）</td></tr>
-                        <tr><td><code>return</code></td><td>-</td><td>server, location, if</td><td>返回状态码和URL（支持重定向分流）</td></tr>
-                        <tr><td><code>break</code></td><td>-</td><td>server, location, if</td><td>停止处理当前location的规则</td></tr>
-                        <tr><td><code>rewrite</code></td><td>-</td><td>server, location</td><td>URL重写（分流处理）</td></tr>
-                        <tr><td><code>if</code></td><td>-</td><td>server, location</td><td>条件判断（基于条件的分流）</td></tr>
-                        <tr><td><code>map</code></td><td>-</td><td>http</td><td>变量映射（分流决策）</td></tr>
-                    </tbody>
-
-                <h4 class="section-subtitle">负载均衡和流量复制指令</h4>
-                <table class="info-table">
-                    <thead>
-                        <tr><th>指令</th><th>默认值</th><th>作用域</th><th>说明</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>upstream</code></td><td>-</td><td>http</td><td>定义后端服务器组（支持多副本）</td></tr>
-                        <tr><td><code>server</code></td><td>-</td><td>upstream</td><td>定义后端服务器（权重、健康检查等）</td></tr>
-                        <tr><td><code>least_conn</code></td><td>-</td><td>upstream</td><td>最少连接策略（负载均衡算法）</td></tr>
-                        <tr><td><code>ip_hash</code></td><td>-</td><td>upstream</td><td>IP哈希策略（会话保持）</td></tr>
-                        <tr><td><code>hash</code></td><td>-</td><td>upstream</td><td>自定义哈希策略</td></tr>
-                        <tr><td><code>least_time</code></td><td>-</td><td>upstream</td><td>最短响应时间策略</td></tr>
-                        <tr><td><code>random</code></td><td>-</td><td>upstream</td><td>随机选择策略</td></tr>
-                        <tr><td><code>keepalive</code></td><td>-</td><td>upstream</td><td>保持连接数（连接池）</td></tr>
-                    </tbody>
-                </table>
-
+    <footer>
+        <div class="container">
+            <p>Nginx 学习教程 - 掌握核心配置</p>
+        </div>
+    </footer>
 </body>
 </html>
