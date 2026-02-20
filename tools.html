@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 周边工具 - 常用配套工具指南</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .tool-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .tool-card h3 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tool-card .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e8eaf6;
+            color: #5c6bc0;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .tool-card p {
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+        .tool-card .install {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .tool-card .install code {
+            color: #e65100;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        }
+        .tool-card .features {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .tool-card .features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+        .tool-card .features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        .tool-category {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin: 30px 0 20px 0;
+        }
+        .tool-category h3 {
+            margin: 0;
+            color: white;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e8eaed;
+        }
+        .comparison-table th {
+            background: #546e7a;
+            color: white;
+            font-weight: 600;
+        }
+        .comparison-table tr:hover {
+            background: #f5f5f5;
+        }
+        .tip-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 25px 0;
+        }
+        .tip-box strong {
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+                <a href="debug.html" class="nav-link">日志调试</a>
+                <a href="tools.html" class="nav-link active">周边工具</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">🛠️ Nginx 周边工具</h2>
+                <p class="page-intro">
+                    在 Nginx 的生态系统中，有许多优秀的配套工具可以帮助我们更好地管理、监控和优化 Nginx 服务。
+                    本页面介绍常用的 Nginx 周边工具，帮助你提升运维效率。
+                </p>
+
+                <!-- 第一类：配置管理工具 -->
+                <div class="tool-category">
+                    <h3>📝 配置管理工具</h3>
+                </div>
+
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>
+                            nginx-config-formatter
+                            <span class="tag">格式化</span>
+                        </h3>
+                        <p>
+                            自动格式化 Nginx 配置文件，使其结构清晰、易于阅读。支持缩进调整、注释对齐等功能。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>npm install -g nginx-config-formatter</code>
+                        </div>
+                        <ul class="features">
+                            <li>自动缩进和对齐</li>
+                            <li>保持注释位置</li>
+                            <li>支持配置文件验证</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            nginxbeautifier
+                            <span class="tag">美化</span>
+                        </h3>
+                        <p>
+                            在线或命令行工具，快速美化 Nginx 配置文件格式，让配置更加规范统一。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>npm install -g nginxbeautifier</code>
+                        </div>
+                        <ul class="features">
+                            <li>命令行和 Web 界面</li>
+                            <li>自定义缩进大小</li>
+                            <li>批量处理多个文件</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            Configo
+                            <span class="tag">生成器</span>
+                        </h3>
+                        <p>
+                            可视化 Nginx 配置生成器，通过图形界面选择选项，自动生成配置文件。
+                        </p>
+                        <div class="install">
+                            <strong>访问：</strong><br>
+                            <code>https://www.digitalocean.com/community/tools/nginx</code>
+                        </div>
+                        <ul class="features">
+                            <li>可视化配置界面</li>
+                            <li>支持常见场景模板</li>
+                            <li>实时预览配置</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 第二类：日志分析工具 -->
+                <div class="tool-category">
+                    <h3>📊 日志分析工具</h3>
+                </div>
+
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>
+                            GoAccess
+                            <span class="tag">实时分析</span>
+                        </h3>
+                        <p>
+                            实时 Web 日志分析器，可在终端或通过浏览器查看访问统计、访客信息、404 错误等。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>apt install goaccess</code> 或 <code>yum install goaccess</code>
+                        </div>
+                        <ul class="features">
+                            <li>实时日志分析</li>
+                            <li>终端和 Web 界面</li>
+                            <li>丰富的统计图表</li>
+                            <li>支持多种日志格式</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            AWStats
+                            <span class="tag">统计分析</span>
+                        </h3>
+                        <p>
+                            功能强大的日志分析工具，生成详细的访问统计报告，包括访客、页面、来源等。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>apt install awstats</code> 或 <code>yum install awstats</code>
+                        </div>
+                        <ul class="features">
+                            <li>详细的访问统计</li>
+                            <li>支持虚拟主机</li>
+                            <li>图形化报告</li>
+                            <li>定期自动更新</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            Fail2Ban
+                            <span class="tag">安全防护</span>
+                        </h3>
+                        <p>
+                            入侵防御系统，通过分析日志自动封禁恶意 IP，保护服务器安全。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>apt install fail2ban</code> 或 <code>yum install fail2ban</code>
+                        </div>
+                        <ul class="features">
+                            <li>自动封禁恶意 IP</li>
+                            <li>可自定义规则</li>
+                            <li>支持多种服务</li>
+                            <li>邮件通知功能</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 第三类：监控工具 -->
+                <div class="tool-category">
+                    <h3>📈 监控工具</h3>
+                </div>
+
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>
+                            Nginx Prometheus Exporter
+                            <span class="tag">指标导出</span>
+                        </h3>
+                        <p>
+                            将 Nginx 指标导出为 Prometheus 格式，配合 Grafana 实现可视化监控。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>docker pull nginx/nginx-prometheus-exporter</code>
+                        </div>
+                        <ul class="features">
+                            <li>Prometheus 指标导出</li>
+                            <li>Grafana 集成</li>
+                            <li>实时监控面板</li>
+                            <li>告警规则配置</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            Nginx Amplify
+                            <span class="tag">官方监控</span>
+                        </h3>
+                        <p>
+                            Nginx 官方提供的监控和配置工具，提供性能分析、配置检查和告警功能。
+                        </p>
+                        <div class="install">
+                            <strong>访问：</strong><br>
+                            <code>https://amplify.nginx.com</code>
+                        </div>
+                        <ul class="features">
+                            <li>官方支持</li>
+                            <li>配置检查和建议</li>
+                            <li>性能指标监控</li>
+                            <li>历史数据分析</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            Zabbix Nginx 模板
+                            <span class="tag">企业监控</span>
+                        </h3>
+                        <p>
+                            Zabbix 监控系统的 Nginx 模板，提供完整的监控项和触发器配置。
+                        </p>
+                        <div class="install">
+                            <strong>获取：</strong><br>
+                            <code>Zabbix 内置模板或 GitHub</code>
+                        </div>
+                        <ul class="features">
+                            <li>企业级监控</li>
+                            <li>丰富的监控项</li>
+                            <li>告警通知</li>
+                            <li>历史趋势分析</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 第四类：测试工具 -->
+                <div class="tool-category">
+                    <h3>🧪 测试工具</h3>
+                </div>
+
+                <div class="tool-grid">
+                    <div class="tool-card">
+                        <h3>
+                            ab (Apache Bench)
+                            <span class="tag">压力测试</span>
+                        </h3>
+                        <p>
+                            简单易用的 HTTP 压力测试工具，快速测试 Nginx 性能和并发处理能力。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>apt install apache2-utils</code> 或 <code>yum install httpd-tools</code>
+                        </div>
+                        <ul class="features">
+                            <li>简单易用</li>
+                            <li>快速基准测试</li>
+                            <li>并发请求测试</li>
+                            <li>详细统计报告</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            wrk
+                            <span class="tag">高性能测试</span>
+                        </h3>
+                        <p>
+                            现代 HTTP 基准测试工具，支持 Lua 脚本，性能优于 ab，适合高并发测试。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>apt install wrk</code> 或 <code>brew install wrk</code>
+                        </div>
+                        <ul class="features">
+                            <li>高性能测试</li>
+                            <li>Lua 脚本支持</li>
+                            <li>多线程并发</li>
+                            <li>延迟统计</li>
+                        </ul>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>
+                            curl
+                            <span class="tag">调试工具</span>
+                        </h3>
+                        <p>
+                            通用的 URL 传输工具，用于测试 Nginx 响应、检查 headers、调试配置等。
+                        </p>
+                        <div class="install">
+                            <strong>安装：</strong><br>
+                            <code>系统自带或 apt/yum install curl</code>
+                        </div>
+                        <ul class="features">
+                            <li>请求调试</li>
+                            <li>Header 检查</li>
+                            <li>性能分析</li>
+                            <li>脚本自动化</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 工具对比表 -->
+                <h3 style="margin-top: 40px;">📋 工具选择对比</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>工具名称</th>
+                            <th>类型</th>
+                            <th>难度</th>
+                            <th>适用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>GoAccess</strong></td>
+                            <td>日志分析</td>
+                            <td>⭐⭐</td>
+                            <td>实时查看访问统计、快速排查问题</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Prometheus + Grafana</strong></td>
+                            <td>监控告警</td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>企业级监控、自定义指标和告警</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nginx Amplify</strong></td>
+                            <td>监控配置</td>
+                            <td>⭐⭐</td>
+                            <td>官方监控、配置优化建议</td>
+                        </tr>
+                        <tr>
+                            <td><strong>wrk</strong></td>
+                            <td>压力测试</td>
+                            <td>⭐⭐⭐</td>
+                            <td>性能基准测试、高并发场景</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fail2Ban</strong></td>
+                            <td>安全防护</td>
+                            <td>⭐⭐⭐</td>
+                            <td>防止暴力破解、恶意访问</td>
+                        </tr>
+                        <tr>
+                            <td><strong>nginxbeautifier</strong></td>
+                            <td>配置工具</td>
+                            <td>⭐</td>
+                            <td>配置文件格式化、团队协作</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 使用建议 -->
+                <div class="tip-box">
+                    <strong>💡 使用建议：</strong>
+                    <ul style="margin: 10px 0 0 20px; line-height: 2;">
+                        <li>开发环境：使用 <code>nginxbeautifier</code> 格式化配置，<code>curl</code> 进行日常调试</li>
+                        <li>测试环境：使用 <code>wrk</code> 进行压力测试，<code>GoAccess</code> 查看访问日志</li>
+                        <li>生产环境：部署 <code>Prometheus + Grafana</code> 或 <code>Nginx Amplify</code> 进行监控，配置 <code>Fail2Ban</code> 保护安全</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Nginx 深度学习。深入学习 Nginx 内部机制与配置实践。</p>
+        </div>
+    </footer>
+</body>
+</html>
