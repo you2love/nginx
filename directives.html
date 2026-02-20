@@ -37,6 +37,35 @@
             margin-top: 30px;
             margin-bottom: 15px;
             color: #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .section-subtitle:hover {
+            background: #f5f5f5;
+        }
+        .section-subtitle::after {
+            content: '+';
+            font-size: 20px;
+            font-weight: bold;
+            color: #007acc;
+        }
+        .section-subtitle.collapsed::after {
+            content: '+';
+        }
+        .section-subtitle:not(.collapsed)::after {
+            content: '−';
+        }
+        .subsection {
+            display: none;
+        }
+        .section-subtitle:not(.collapsed) + .subsection {
+            display: block;
         }
         .page-intro {
             color: #666;
@@ -56,6 +85,27 @@
             margin: 20px 0;
             border-radius: 4px;
         }
+        .toggle-container {
+            text-align: right;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .toggle-btn {
+            padding: 8px 16px;
+            margin-left: 10px;
+            cursor: pointer;
+            border: 1px solid #007acc;
+            background: white;
+            color: #007acc;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .toggle-btn:hover {
+            background: #007acc;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -71,6 +121,7 @@
                 <a href="request-flow.html" class="nav-link">请求处理</a>
                 <a href="directives.html" class="nav-link active">指令详解</a>
                 <a href="configs.html" class="nav-link">应用配置</a>
+                <a href="debug.html" class="nav-link">日志调试</a>
             </nav>
         </div>
     </header>
@@ -873,11 +924,65 @@ server {
             </div>
         </section>
     </main>
-
-    <footer>
-        <div class="container">
-            <p>Nginx 学习教程 - 掌握核心配置</p>
-        </div>
-    </footer>
+    
+    <script>
+        // 指令折叠功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取所有 section-subtitle
+            const subtitles = document.querySelectorAll('.section-subtitle');
+            
+            // 默认全部折叠
+            subtitles.forEach(function(subtitle) {
+                subtitle.classList.add('collapsed');
+                
+                // 将下一个元素包装到 subsection div 中
+                const nextElement = subtitle.nextElementSibling;
+                if (nextElement) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'subsection';
+                    
+                    // 将所有后续元素移到 wrapper 中，直到下一个 section-subtitle
+                    let current = nextElement;
+                    while (current && !current.classList.contains('section-subtitle')) {
+                        const temp = current.nextElementSibling;
+                        wrapper.appendChild(current);
+                        current = temp;
+                    }
+                    
+                    subtitle.parentNode.insertBefore(wrapper, subtitle.nextSibling);
+                    
+                    // 添加点击事件
+                    subtitle.addEventListener('click', function() {
+                        this.classList.toggle('collapsed');
+                    });
+                }
+            });
+            
+            // 添加全部展开/折叠按钮
+            const mainElement = document.querySelector('main');
+            const firstSection = mainElement.querySelector('.section');
+            const toggleContainer = document.createElement('div');
+            toggleContainer.className = 'toggle-container';
+            toggleContainer.innerHTML = `
+                <button class="toggle-btn" onclick="expandAll()">全部展开</button>
+                <button class="toggle-btn" onclick="collapseAll()">全部折叠</button>
+            `;
+            firstSection.insertBefore(toggleContainer, firstSection.firstChild);
+        });
+        
+        function expandAll() {
+            const subtitles = document.querySelectorAll('.section-subtitle');
+            subtitles.forEach(function(subtitle) {
+                subtitle.classList.remove('collapsed');
+            });
+        }
+        
+        function collapseAll() {
+            const subtitles = document.querySelectorAll('.section-subtitle');
+            subtitles.forEach(function(subtitle) {
+                subtitle.classList.add('collapsed');
+            });
+        }
+    </script>
 </body>
 </html>
