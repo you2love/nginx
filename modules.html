@@ -1564,5 +1564,68 @@ location /api {
         <p>📖 提示：生产环境使用第三方模块前，请充分测试兼容性和稳定性。</p>
         <p style="margin-top: 8px;">🎨 创意插件可以扩展 Nginx 功能，但请根据实际需求谨慎选择。</p>
     </footer>
+
+    <script>
+        // 单个卡片折叠功能
+        function toggleCard(cardId) {
+            var card = document.getElementById(cardId);
+            var content = card.querySelector('.card-content');
+            var btn = card.querySelector('.collapse-btn');
+            
+            if (content.classList.contains('collapsed')) {
+                // 展开
+                content.classList.remove('collapsed');
+                card.classList.remove('collapsed');
+                btn.textContent = '收起';
+                btn.classList.remove('collapsed');
+            } else {
+                // 收起
+                content.classList.add('collapsed');
+                card.classList.add('collapsed');
+                btn.textContent = '展开';
+                btn.classList.add('collapsed');
+            }
+        }
+
+        // 全部展开/收起功能
+        var allExpanded = true; // 跟踪当前状态
+        
+        function toggleAllCards() {
+            var btn = document.getElementById('expandAllBtn');
+            var cards = document.querySelectorAll('.plugin-card');
+            
+            allExpanded = !allExpanded;
+            
+            cards.forEach(function(card) {
+                var content = card.querySelector('.card-content');
+                var collapseBtn = card.querySelector('.collapse-btn');
+                
+                if (allExpanded) {
+                    // 全部展开
+                    content.classList.remove('collapsed');
+                    card.classList.remove('collapsed');
+                    collapseBtn.textContent = '收起';
+                    collapseBtn.classList.remove('collapsed');
+                } else {
+                    // 全部收起
+                    content.classList.add('collapsed');
+                    card.classList.add('collapsed');
+                    collapseBtn.textContent = '展开';
+                    collapseBtn.classList.add('collapsed');
+                }
+            });
+            
+            btn.textContent = allExpanded ? '📌 全部展开' : '📌 全部收起';
+        }
+
+        // 页面加载时初始化：所有卡片默认展开
+        document.addEventListener('DOMContentLoaded', function() {
+            var cards = document.querySelectorAll('.plugin-card');
+            cards.forEach(function(card) {
+                var content = card.querySelector('.card-content');
+                content.classList.remove('collapsed');
+            });
+        });
+    </script>
 </body>
 </html>
