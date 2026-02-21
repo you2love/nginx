@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 源码解读 - 配置文件加载与请求处理</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .code-section {
+            background: white;
+            border-left: 4px solid #007acc;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .code-section h3 {
+            color: #007acc;
+            margin-top: 0;
+        }
+        .source-code {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .source-code pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .source-code code {
+            color: #aed581;
+        }
+        .code-comment {
+            color: #78909c;
+            font-style: italic;
+        }
+        .code-keyword {
+            color: #ff7043;
+            font-weight: bold;
+        }
+        .code-type {
+            color: #42a5f5;
+        }
+        .code-function {
+            color: #66bb6a;
+        }
+        .code-string {
+            color: #ffca28;
+        }
+        .flow-diagram {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .struct-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .struct-table th, .struct-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .struct-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .struct-table code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        .nav-link.source-code-link {
+            background: #007acc;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .nav-link.source-code-link:hover {
+            background: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+                <a href="debug.html" class="nav-link">日志调试</a>
+                <a href="tools.html" class="nav-link">周边工具</a>
+                <a href="modules.html" class="nav-link">插件系统</a>
+                <a href="source-code.html" class="nav-link source-code-link active">源码解读</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2 class="section-title">配置文件加载与请求处理源码解读</h2>
+                <p class="section-subtitle">深入 Nginx 源码，理解配置如何读入内存并在请求处理中发挥作用</p>
+            </div>
+        </section>
+
+        <!-- 整体流程概览 -->
+        <section class="section">
+            <div class="container">
+                <h3>📋 整体流程概览</h3>
+                <div class="flow-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                      Nginx 启动与请求处理流程                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  【启动阶段】                                                    │
+│     1. main()                                                   │
+│        ↓                                                        │
+│     2. ngx_init_cycle()  ← 初始化周期结构                        │
+│        ↓                                                        │
+│     3. ngx_conf_init()   ← 创建配置解析上下文                    │
+│        ↓                                                        │
+│     4. ngx_conf_parse()  ← 解析配置文件                          │
+│        ↓                                                        │
+│     5. ngx_conf_post_configuration() ← 配置后处理               │
+│        ↓                                                        │
+│     6. 创建监听 socket，fork worker 进程                         │
+│                                                                 │
+│  【请求处理阶段】                                                 │
+│     1. ngx_worker_process_cycle()                               │
+│        ↓                                                        │
+│     2. ngx_event_loop()  ← 事件循环                              │
+│        ↓                                                        │
+│     3. ngx_http_process_request_line() ← 读取请求行             │
+│        ↓                                                        │
+│     4. ngx_http_process_request_headers() ← 读取请求头          │
+│        ↓                                                        │
+│     5. ngx_http_core_run_phases() ← 执行 HTTP 处理阶段           │
+│        ↓                                                        │
+│     6. 根据配置中的 location 匹配，调用相应 handler              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                </div>
+            </div>
+        </section>
+
+        <!-- 第一部分：配置文件加载 -->
+        <section class="section">
+            <div class="container">
+                <h2>一、配置文件加载到内存结构</h2>
+                
+                <div class="code-section">
+                    <h3>1.1 核心数据结构</h3>
+                    <p>Nginx 使用 <code>ngx_cycle_t</code> 和 <code>ngx_conf_t</code> 两个核心结构体来管理配置：</p>
+                    
+                    <table class="struct-table">
+                        <tr>
+                            <th>结构体</th>
+                            <th>作用</th>
+                            <th>关键字段</th>
+                        </tr>
+                        <tr>
+                            <td><code>ngx_cycle_t</code></td>
+                            <td>Nginx 运行周期结构，保存全局状态</td>
+                            <td>
+                                <code>conf_ctx</code> - 所有模块的配置上下文<br>
+                                <code>pool</code> - 内存池<br>
+                                <code>connections</code> - 连接数组<br>
+                                <code>listening</code> - 监听端口数组
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>ngx_conf_t</code></td>
+                            <td>配置解析上下文</td>
+                            <td>
+                                <code>cycle</code> - 指向当前 cycle<br>
+                                <code>conf_file</code> - 当前解析的文件<br>
+                                <code>handler</code> - 配置项处理函数<br>
+                                <code>ctx</code> - 模块配置上下文
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="code-section">
+                    <h3>1.2 配置解析入口 - ngx_conf_parse()</h3>
+                    <p>这是配置解析的核心函数，位于 <code>src/core/ngx_conf_file.c</code>：</p>
+                    <div class="source-code">
+<pre><span class="code-comment">/* 
+ * 配置文件解析主函数
+ * cf: 配置解析上下文
+ * filename: 配置文件路径 (可选，NULL 表示使用默认)
+ */</span>
+<span class="code-type">char</span> *
+<span class="code-function">ngx_conf_parse</span>(ngx_conf_t *cf, ngx_str_t *filename)
+{
+    <span class="code-type">u_char</span>      *p;
+    <span class="code-type">char</span>        *rv;
+    <span class="code-type">ngx_int_t</span>    rc;
+    <span class="code-type">ngx_buf_t</span>   *buf;
+    <span class="code-type">ngx_str_t</span>    s;
+    <span class="code-type">ngx_conf_file_t</span> *conf_file;
+
+    <span class="code-comment">/* 如果是首次解析，打开配置文件 */</span>
+    <span class="code-keyword">if</span> (filename) {
+        cf->conf_file->file = ngx_open_file(filename->data, ...);
+        <span class="code-keyword">if</span> (cf->conf_file->file == NGX_INVALID_FILE) {
+            <span class="code-keyword">return</span> NGX_CONF_ERROR;
+        }
+    }
+
+    <span class="code-comment">/* 主解析循环：逐行读取配置文件 */</span>
+    <span class="code-keyword">for</span> ( ;; ) {
+        <span class="code-comment">/* 读取一行配置 */</span>
+        rc = ngx_conf_read_token(cf);
+
+        <span class="code-keyword">if</span> (rc == NGX_ERROR) {
+            <span class="code-keyword">return</span> NGX_CONF_ERROR;
+        }
+
+        <span class="code-comment">/* 解析完成 */</span>
+        <span class="code-keyword">if</span> (rc == NGX_DONE) {
+            <span class="code-keyword">return</span> NGX_CONF_OK;
+        }
+
+        <span class="code-comment">/* 处理解析到的指令 */</span>
+        rc = ngx_conf_handler(cf, last);
+
+        <span class="code-keyword">if</span> (rc == NGX_ERROR) {
+            <span class="code-keyword">return</span> NGX_CONF_ERROR;
+        }
+    }
+}</pre>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>关键点：</strong>配置解析是逐行进行的，每行被解析为 token 序列，然后调用对应的 handler 函数处理。
+                </div>
+
+                <div class="code-section">
+                    <h3>1.3 配置项处理 - ngx_conf_handler()</h3>
+                    <p>该函数负责查找并调用对应指令的处理函数：</p>
+                    <div class="source-code">
+<pre><span class="code-keyword">static</span> <span class="code-type">ngx_int_t</span>
+<span class="code-function">ngx_conf_handler</span>(ngx_conf_t *cf, ngx_int_t last)
+{
+    <span class="code-type">char</span>           *rv;
+    <span class="code-type">void</span>           *conf, **confp;
+    <span class="code-type">ngx_uint_t</span>      i, found;
+    <span class="code-type">ngx_cmd_t</span>      *cmd;
+
+    found = 0;
+
+    <span class="code-comment">/* 遍历所有模块的命令，查找匹配的指令 */</span>
+    <span class="code-keyword">for</span> (i = 0; cf->cycle->modules[i]; i++) {
+        cmd = cf->cycle->modules[i]->commands;
+        <span class="code-keyword">if</span> (cmd == NULL) {
+            <span class="code-keyword">continue</span>;
+        }
+
+        <span class="code-keyword">for</span> ( ; cmd->name.len; cmd++) {
+            <span class="code-comment">/* 比较指令名称 */</span>
+            <span class="code-keyword">if</span> (cf->args->elts[0].len != cmd->name.len) {
+                <span class="code-keyword">continue</span>;
+            }
+
+            <span class="code-keyword">if</span> (ngx_strcmp(cf->args->elts[0].data, cmd->name.data) != 0) {
+                <span class="code-keyword">continue</span>;
+            }
+
+            found = 1;
+            <span class="code-keyword">break</span>;
+        }
+
+        <span class="code-keyword">if</span> (found) {
+            <span class="code-keyword">break</span>;
+        }
+    }
+
+    <span class="code-comment">/* 调用找到的命令处理函数 */</span>
+    rv = cmd->set(cmd, conf, confp, cf->args);
+
+    <span class="code-keyword">return</span> (rv == NGX_CONF_OK) ? NGX_OK : NGX_ERROR;
+}</pre>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>重要：</strong>每个配置指令（如 <code>worker_processes</code>、<code>listen</code>、<code>root</code>）都有对应的 <code>set</code> 函数，该函数负责将配置值存储到内存结构体中。
+                </div>
+            </div>
+        </section>
+
+        <!-- 第二部分：内存中的配置结构 -->
+        <section class="section">
+            <div class="container">
+                <h2>二、配置在内存中的存储结构</h2>
+
+                <div class="code-section">
+                    <h3>2.1 三层配置结构</h3>
+                    <p>Nginx HTTP 模块的配置分为三个层级，每个层级对应不同的结构体：</p>
+                    
+                    <table class="struct-table">
+                        <tr>
+                            <th>层级</th>
+                            <th>结构体</th>
+                            <th>作用域</th>
+                            <th>示例指令</th>
+                        </tr>
+                        <tr>
+                            <td>Main</td>
+                            <td><code>ngx_http_core_main_conf_t</code></td>
+                            <td>全局配置</td>
+                            <td><code>worker_processes</code>, <code>user</code></td>
+                        </tr>
+                        <tr>
+                            <td>Srv</td>
+                            <td><code>ngx_http_core_srv_conf_t</code></td>
+                            <td>server 块配置</td>
+                            <td><code>server_name</code>, <code>listen</code></td>
+                        </tr>
+                        <tr>
+                            <td>Loc</td>
+                            <td><code>ngx_http_core_loc_conf_t</code></td>
+                            <td>location 块配置</td>
+                            <td><code>root</code>, <code>proxy_pass</code></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="flow-diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    配置内存结构层次图                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ngx_http_core_main_conf_t (全局)                           │
+│  ├─ servers: array&lt;ngx_http_core_srv_conf_t&gt;              │
+│  ├─ phase_engine: 处理阶段引擎                              │
+│  └─ ...                                                    │
+│                                                             │
+│       └─ ngx_http_core_srv_conf_t (server 块)               │
+│          ├─ server_names: array&lt;server_name&gt;              │
+│          ├─ locations: array&lt;ngx_http_core_loc_conf_t&gt;    │
+│          ├─ listen: 监听端口配置                            │
+│          └─ ...                                            │
+│                                                             │
+│              └─ ngx_http_core_loc_conf_t (location 块)      │
+│                 ├─ root: 根目录路径                         │
+│                 ├─ proxy_pass: 代理地址                     │
+│                 ├─ handler: 请求处理函数指针                │
+│                 └─ ...                                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+                </div>
+
+                <div class="code-section">
+                    <h3>2.2 location 配置示例 - ngx_http_core_location()</h3>
+                    <div class="source-code">
+<pre><span class="code-comment">/* 
+ * 处理 location 块配置
+ * 当解析到 location /xxx { ... } 时调用
+ */</span>
+<span class="code-keyword">static</span> <span class="code-type">char</span> *
+<span class="code-function">ngx_http_core_location</span>(ngx_conf_t *cf, ngx_cmd_t *cmd, <span class="code-type">void</span> *conf)
+{
+    <span class="code-type">ngx_http_core_srv_conf_t</span>  *cscf;
+    <span class="code-type">ngx_http_core_loc_conf_t</span>  *clcf, *alcf;
+
+    cscf = ngx_http_conf_get_module_srv_conf(cf, ngx_http_core_module);
+
+    <span class="code-comment">/* 创建 location 配置结构 */</span>
+    clcf = ngx_pcalloc(cf->pool, <span class="code-keyword">sizeof</span>(ngx_http_core_loc_conf_t));
+    
+    <span class="code-comment">/* 解析 location 修饰符和路径 */</span>
+    <span class="code-keyword">if</span> (ngx_strcmp(value[1].data, <span class="code-string">"="</span>) == 0) {
+        clcf->name = value[2];
+        clcf->exact_match = 1;
+    } <span class="code-keyword">else</span> <span class="code-keyword">if</span> (ngx_strcmp(value[1].data, <span class="code-string">"~"</span>) == 0) {
+        clcf->name = value[2];
+        clcf->regex = 1;
+    } <span class="code-keyword">else</span> {
+        clcf->name = value[1];
+    }
+
+    <span class="code-comment">/* 将 location 添加到 server 的 location 列表 */</span>
+    <span class="code-keyword">if</span> (cscf->locations == NULL) {
+        cscf->locations = ngx_array_create(cf->pool, 1, 
+                                           <span class="code-keyword">sizeof</span>(ngx_http_core_loc_conf_t *));
+    }
+    
+    clcfp = ngx_array_push(cscf->locations);
+    *clcfp = clcf;
+
+    <span class="code-comment">/* 递归解析 location 块内的配置 */</span>
+    rv = ngx_conf_parse(cf, NULL);
+
+    <span class="code-keyword">return</span> rv;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第三部分：请求处理中的配置使用 -->
+        <section class="section">
+            <div class="container">
+                <h2>三、请求处理时配置如何起作用</h2>
+
+                <div class="code-section">
+                    <h3>3.1 请求处理的 11 个阶段</h3>
+                    <p>HTTP 请求处理分为 11 个阶段，每个阶段都有对应的 handler，这些 handler 来自配置：</p>
+                    
+                    <table class="struct-table">
+                        <tr>
+                            <th>阶段</th>
+                            <th>处理函数</th>
+                            <th>典型用途</th>
+                        </tr>
+                        <tr>
+                            <td>1. Post Read</td>
+                            <td><code>ngx_http_core_post_read_phase</code></td>
+                            <td>请求读取后处理</td>
+                        </tr>
+                        <tr>
+                            <td>2. Server Rewrite</td>
+                            <td><code>ngx_http_core_rewrite_phase</code></td>
+                            <td>server 块重写</td>
+                        </tr>
+                        <tr>
+                            <td>3. Find Config</td>
+                            <td><code>ngx_http_core_find_config_phase</code></td>
+                            <td><strong>查找匹配的 location</strong></td>
+                        </tr>
+                        <tr>
+                            <td>4. Rewrite</td>
+                            <td><code>ngx_http_core_rewrite_phase</code></td>
+                            <td>location 块重写</td>
+                        </tr>
+                        <tr>
+                            <td>5. Post Rewrite</td>
+                            <td><code>ngx_http_core_post_rewrite_phase</code></td>
+                            <td>重写后处理</td>
+                        </tr>
+                        <tr>
+                            <td>6. Pre Access</td>
+                            <td><code>ngx_http_core_pre_access_phase</code></td>
+                            <td>访问控制前处理</td>
+                        </tr>
+                        <tr>
+                            <td>7. Access</td>
+                            <td><code>ngx_http_core_access_phase</code></td>
+                            <td><strong>访问权限检查</strong></td>
+                        </tr>
+                        <tr>
+                            <td>8. Post Access</td>
+                            <td><code>ngx_http_core_post_access_phase</code></td>
+                            <td>访问控制后处理</td>
+                        </tr>
+                        <tr>
+                            <td>9. Try Files</td>
+                            <td><code>ngx_http_core_try_files_phase</code></td>
+                            <td>try_files 指令处理</td>
+                        </tr>
+                        <tr>
+                            <td>10. Content</td>
+                            <td><code>ngx_http_core_content_phase</code></td>
+                            <td><strong>生成响应内容</strong></td>
+                        </tr>
+                        <tr>
+                            <td>11. Log</td>
+                            <td><code>ngx_http_core_log_phase</code></td>
+                            <td>记录访问日志</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="code-section">
+                    <h3>3.2 关键：查找匹配的 location</h3>
+                    <p>在 Find Config 阶段，Nginx 根据请求 URI 查找匹配的 location 配置：</p>
+                    <div class="source-code">
+<pre><span class="code-comment">/* 
+ * 查找配置 - 第 3 阶段
+ * 根据请求 URI 找到对应的 location 配置
+ */</span>
+<span class="code-keyword">static</span> <span class="code-type">void</span>
+<span class="code-function">ngx_http_core_find_config_phase</span>(ngx_http_request_t *r,
+    ngx_http_phase_handler_t *ph)
+{
+    <span class="code-type">u_char</span>                    *p;
+    <span class="code-type">size_t</span>                     len;
+    <span class="code-type">ngx_http_core_loc_conf_t</span>  *clcf;
+
+    r->content_handler = NULL;
+    r->uri_changed = 0;
+
+    <span class="code-comment">/* 核心：根据 URI 查找匹配的 location */</span>
+    clcf = ngx_http_core_find_location(r);
+
+    r->loc_conf = clcf->loc_conf;
+
+    <span class="code-comment">/* 检查请求方法是否允许 */</span>
+    <span class="code-keyword">if</span> ((r->method & clcf->limit_except) == 0) {
+        r->main->count++;
+        ngx_http_internal_redirect(r, clcf->name, NULL);
+        <span class="code-keyword">return</span>;
+    }
+
+    <span class="code-comment">/* 设置内容处理 handler */</span>
+    r->content_handler = clcf->handler;
+
+    ph++;
+    r->phase_handler = ph - r->phase_engine.handlers;
+    r->write_event_handler(r);
+}</pre>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <strong>关键点：</strong><code>ngx_http_core_find_location()</code> 函数会遍历 server 块下的所有 location，根据匹配规则（精确匹配、前缀匹配、正则匹配）找到最合适的 location 配置。
+                </div>
+
+                <div class="code-section">
+                    <h3>3.3 内容生成阶段 - 配置中的 handler 如何被调用</h3>
+                    <div class="source-code">
+<pre><span class="code-comment">/* 
+ * 内容生成阶段 - 第 10 阶段
+ * 调用 location 配置中设置的 handler 生成响应
+ */</span>
+<span class="code-keyword">static</span> <span class="code-type">void</span>
+<span class="code-function">ngx_http_core_content_phase</span>(ngx_http_request_t *r,
+    ngx_http_phase_handler_t *ph)
+{
+    <span class="code-type">size_t</span>     root;
+    <span class="code-type">ngx_int_t</span>  rc;
+    <span class="code-type">ngx_http_core_loc_conf_t</span>  *clcf;
+
+    clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
+
+    <span class="code-comment">/* 如果 location 设置了 handler，直接调用 */</span>
+    <span class="code-keyword">if</span> (r->content_handler) {
+        r->write_event_handler = ngx_http_request_empty_handler;
+        rc = r->content_handler(r);
+        <span class="code-keyword">return</span>;
+    }
+
+    <span class="code-comment">/* 没有 handler 时，尝试作为静态文件处理 */</span>
+    <span class="code-keyword">if</span> (clcf->root.len == 0) {
+        ngx_http_finalize_request(r, NGX_HTTP_NOT_FOUND);
+        <span class="code-keyword">return</span>;
+    }
+
+    <span class="code-comment">/* 拼接文件路径并返回文件内容 */</span>
+    rc = ngx_http_map_uri_to_path(r, &path, &root, 0);
+    <span class="code-keyword">if</span> (rc == NGX_ERROR) {
+        ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
+        <span class="code-keyword">return</span>;
+    }
+
+    ngx_http_finalize_request(r, ngx_http_static_handler(r));
+}</pre>
+                    </div>
+                </div>
+
+                <div class="note-box">
+                    <strong>handler 的来源：</strong>不同的模块会注册不同的 handler。例如：
+                    <ul>
+                        <li><code>proxy_pass</code> → <code>ngx_http_proxy_handler</code></li>
+                        <li><code>fastcgi_pass</code> → <code>ngx_http_fastcgi_handler</code></li>
+                        <li><code>return</code> → <code>ngx_http_return_handler</code></li>
+                        <li>无特殊指令 → 静态文件处理</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第四部分：完整示例 -->
+        <section class="section">
+            <div class="container">
+                <h2>四、完整示例：从配置到代码执行</h2>
+
+                <div class="code-section">
+                    <h3>4.1 配置示例</h3>
+                    <div class="source-code">
+<pre><span class="code-comment"># nginx.conf</span>
+http {
+    server {
+        listen 80;
+        server_name example.com;
+        
+        <span class="code-comment"># location 1: 静态文件</span>
+        location /static/ {
+            root /var/www;
+        }
+        
+        <span class="code-comment"># location 2: 反向代理</span>
+        location /api/ {
+            proxy_pass http://backend:8080;
+        }
+        
+        <span class="code-comment"># location 3: 精确匹配</span>
+        location = /health {
+            return 200 <span class="code-string">"OK"</span>;
+        }
+    }
+}</pre>
+                    </div>
+                </div>
+
+                <div class="flow-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                    配置解析与内存结构对应关系                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  配置文件                    内存结构                           │
+│  ┌──────────────┐           ┌─────────────────────────────┐    │
+│  │ server {     │──────────▶│ ngx_http_core_srv_conf_t    │    │
+│  │   listen 80; │           │   ├─ port = 80              │    │
+│  │   ...        │           │   ├─ server_name = ...      │    │
+│  │              │           │   └─ locations[] = [...]    │    │
+│  │ location     │           │         │                   │    │
+│  │ /static/ {   │──────────▶│         ├─[0]─▶ clcf:       │    │
+│  │   root       │           │              ├─ name = "/static/"  │
+│  │   /var/www;  │           │              ├─ root = "/var/www"  │
+│  │ }            │           │              └─ handler = static   │
+│  │              │           │         │                   │    │
+│  │ location     │           │         ├─[1]─▶ clcf:       │    │
+│  │ /api/ {      │──────────▶│              ├─ name = "/api/"     │
+│  │   proxy_pass │           │              └─ handler = proxy    │
+│  │   ...;       │           │         │                   │    │
+│  │ }            │           │         └─[2]─▶ clcf:       │    │
+│  │              │           │              ├─ name = "/health"   │
+│  │ location     │           │              ├─ exact_match = 1    │
+│  │ = /health {  │──────────▶│              └─ handler = return   │
+│  │   return 200 │           │                             │    │
+│  │   "OK";      │           └─────────────────────────────┘    │
+│  │ }            │                                              │
+│  └──────────────┘                                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <div class="code-section">
+                    <h3>4.2 请求处理流程示例</h3>
+                    <p>当请求 <code>GET /api/users</code> 到达时：</p>
+                    
+                    <table class="struct-table">
+                        <tr>
+                            <th>步骤</th>
+                            <th>函数</th>
+                            <th>操作</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td><code>ngx_http_process_request_line()</code></td>
+                            <td>解析请求行，得到 <code>GET /api/users HTTP/1.1</code></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>ngx_http_process_request_headers()</code></td>
+                            <td>解析请求头</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>ngx_http_core_find_config_phase()</code></td>
+                            <td>查找匹配的 location → 找到 <code>/api/</code></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>ngx_http_core_access_phase()</code></td>
+                            <td>执行访问控制检查</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>ngx_http_core_content_phase()</code></td>
+                            <td>调用 <code>proxy_handler</code> 处理请求</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><code>ngx_http_proxy_handler()</code></td>
+                            <td>向后端 <code>http://backend:8080/api/users</code> 转发请求</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第五部分：关键源码文件索引 -->
+        <section class="section">
+            <div class="container">
+                <h2>五、关键源码文件索引</h2>
+                
+                <table class="struct-table">
+                    <tr>
+                        <th>文件路径</th>
+                        <th>作用</th>
+                        <th>关键函数</th>
+                    </tr>
+                    <tr>
+                        <td><code>src/core/ngx_conf_file.c</code></td>
+                        <td>配置文件解析核心</td>
+                        <td><code>ngx_conf_parse()</code>, <code>ngx_conf_handler()</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>src/core/ngx_cycle.c</code></td>
+                        <td>运行周期管理</td>
+                        <td><code>ngx_init_cycle()</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>src/http/ngx_http_core_module.c</code></td>
+                        <td>HTTP 核心模块</td>
+                        <td><code>ngx_http_core_location()</code>, <code>ngx_http_core_find_location()</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>src/http/ngx_http_request.c</code></td>
+                        <td>请求处理</td>
+                        <td><code>ngx_http_process_request()</code>, <code>ngx_http_core_run_phases()</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>src/http/ngx_http_core_module.h</code></td>
+                        <td>HTTP 核心结构定义</td>
+                        <td><code>ngx_http_core_loc_conf_t</code>, <code>ngx_http_phase_t</code></td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <section class="section bg-light">
+            <div class="container">
+                <h3>💡 学习建议</h3>
+                <ul style="line-height: 2;">
+                    <li>阅读源码时，建议从 <code>ngx_conf_parse()</code> 入手，理解配置解析流程</li>
+                    <li>重点关注配置值如何存储到结构体中，以及在请求处理时如何被读取使用</li>
+                    <li>使用 GDB 或打印日志跟踪关键函数的执行路径</li>
+                    <li>结合 Nginx 源码中的注释（英文注释通常更详细）一起阅读</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Nginx 深度学习 | <a href="index.html">返回首页</a></p>
+        </div>
+    </footer>
+</body>
+</html>

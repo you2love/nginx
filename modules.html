@@ -190,6 +190,74 @@
             color: #ffc107;
             font-size: 16px;
         }
+        .collapse-btn {
+            background: none;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .collapse-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .collapse-btn::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        .collapse-btn.collapsed::after {
+            transform: rotate(-90deg);
+        }
+        .card-content {
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s;
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .card-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        .plugin-card.collapsed {
+            padding: 20px 30px;
+        }
+        .plugin-card.collapsed .plugin-tags,
+        .plugin-card.collapsed p,
+        .plugin-card.collapsed .install-section,
+        .plugin-card.collapsed .feature-list,
+        .plugin-card.collapsed .config-example,
+        .plugin-card.collapsed .tip-box,
+        .plugin-card.collapsed .warning-box {
+            display: none;
+        }
+        .expand-all-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .expand-all-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+        }
+        .expand-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -208,6 +276,7 @@
                 <a href="debug.html" class="nav-link">日志调试</a>
                 <a href="tools.html" class="nav-link">周边工具</a>
                 <a href="modules.html" class="nav-link active">插件系统</a>
+                <a href="source-code.html" class="nav-link">源码解读</a>
             </nav>
         </div>
     </header>
@@ -215,16 +284,21 @@
     <main>
         <section class="section">
             <div class="container">
+                <div class="expand-all-container">
+                    <button class="expand-all-btn" id="expandAllBtn" onclick="toggleAllCards()">📌 全部展开</button>
+                </div>
                 <!-- 第一类：热门模块 -->
                 <div class="plugin-category">
                     <h3>🔥 热门模块（知名度 ★★★★★）</h3>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-1">
                     <h3>
                         ngx_lua (OpenResty)
                         <span class="plugin-rank">🥇 NO.1</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-1')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 脚本</span>
@@ -274,13 +348,16 @@ docker pull openresty/openresty</code>
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>API 网关、WAF 防火墙、动态内容生成、请求处理、认证授权、限流熔断等。
                     </div>
+                    </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-2">
                     <h3>
                         njs (Nginx JavaScript)
                         <span class="plugin-rank">🥈 NO.2</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-2')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag official">官方出品</span>
                         <span class="plugin-tag">JavaScript</span>
@@ -332,6 +409,7 @@ load_module modules/ngx_http_js_module.so;
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>请求过滤、动态响应、Header 处理、简单业务逻辑、A/B 测试等。
                     </div>
+                    </div>
                 </div>
 
                 <!-- 第二类：安全模块 -->
@@ -339,11 +417,13 @@ load_module modules/ngx_http_js_module.so;
                     <h3>🛡️ 安全模块（知名度 ★★★★☆）</h3>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-3">
                     <h3>
                         ModSecurity
                         <span class="plugin-rank">🥉 NO.3</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-3')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">WAF</span>
@@ -390,13 +470,16 @@ sudo make install</code>
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>Web 应用防火墙、防止 SQL 注入、XSS 攻击防护、CC 攻击防护、敏感信息泄露防护。
                     </div>
+                    </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-4">
                     <h3>
                         ngx_brotli
                         <span class="plugin-rank">NO.4</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-4')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">压缩</span>
@@ -433,13 +516,14 @@ sudo make install
     <span class="directive">brotli</span> <span class="value">on</span>;
     <span class="directive">brotli_comp_level</span> <span class="value">6</span>;
     <span class="directive">brotli_types</span> <span class="value">text/plain text/css application/json application/javascript text/xml application/xml</span>;
-    
+
     <span class="comment"># 同时支持 gzip（兼容旧浏览器）</span>
     <span class="directive">gzip</span> <span class="value">on</span>;
 }</pre>
                     </div>
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>静态资源压缩、HTML/CSS/JS 压缩、API 响应压缩、提升页面加载速度。
+                    </div>
                     </div>
                 </div>
 
@@ -448,11 +532,13 @@ sudo make install
                     <h3>⚙️ 功能扩展模块（知名度 ★★★☆☆）</h3>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-5">
                     <h3>
                         nginx-upstream-fair
                         <span class="plugin-rank">NO.5</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-5')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">负载均衡</span>
@@ -490,13 +576,16 @@ sudo make install</code>
     }
 }</pre>
                     </div>
+                    </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-6">
                     <h3>
                         ngx_http_geoip2_module
                         <span class="plugin-rank">NO.6</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-6')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">地理位置</span>
@@ -541,6 +630,7 @@ wget https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb</
     }
 }</pre>
                     </div>
+                    </div>
                 </div>
 
                 <!-- 第四类：其他实用模块 -->
@@ -548,11 +638,13 @@ wget https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb</
                     <h3>🔧 其他实用模块（知名度 ★★☆☆☆）</h3>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-7">
                     <h3>
                         nginx-rtmp-module
                         <span class="plugin-rank">NO.7</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-7')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">流媒体</span>
@@ -579,13 +671,17 @@ sudo make install</code>
                         <li>视频录制</li>
                         <li>实时统计</li>
                     </ul>
+                
+                    </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-8">
                     <h3>
                         lua-resty-http
                         <span class="plugin-rank">NO.8</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-8')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 库</span>
@@ -603,18 +699,23 @@ luarocks install lua-resty-http
 # 或在 OpenResty 中直接使用
 # 通常已预装</code>
                     </div>
+                
+                    </div>
                 </div>
 
                 <!-- 第五类：性能优化模块 -->
                 <div class="plugin-category">
                     <h3>⚡ 性能优化模块（知名度 ★★☆☆☆）</h3>
-                </div>
+                
+                    </div></div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-9">
                     <h3>
                         ngx_cache_purge
                         <span class="plugin-rank">NO.9</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-9')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">缓存</span>
@@ -659,11 +760,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-10">
                     <h3>
                         headers-more-nginx-module
                         <span class="plugin-rank">NO.10</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-10')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Header</span>
@@ -707,11 +810,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-11">
                     <h3>
                         echo-nginx-module
                         <span class="plugin-rank">NO.11</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-11')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">调试</span>
@@ -757,11 +862,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-12">
                     <h3>
                         nginx-sticky-module
                         <span class="plugin-rank">NO.12</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-12')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">负载均衡</span>
@@ -808,11 +915,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-13">
                     <h3>
                         lua-resty-redis
                         <span class="plugin-rank">NO.13</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-13')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 库</span>
@@ -859,11 +968,13 @@ luarocks install lua-resty-redis
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-14">
                     <h3>
                         nginx-auth-request-module
                         <span class="plugin-rank">NO.14</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-14')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">认证</span>
@@ -905,6 +1016,8 @@ sudo make install</code>
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>OAuth 认证、SSO 单点登录、JWT 验证、统一认证网关。
                     </div>
+                
+                    </div>
                 </div>
 
                 <!-- 第六类：创意插件 -->
@@ -912,11 +1025,13 @@ sudo make install</code>
                     <h3>🎨 创意插件（特色功能）</h3>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-15">
                     <h3>
                         ngx_http_sub_module
                         <span class="plugin-rank">🎯 内容替换</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-15')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag official">官方内置</span>
                         <span class="plugin-tag">内容过滤</span>
@@ -956,11 +1071,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-16">
                     <h3>
                         lua-resty-lock
                         <span class="plugin-rank">🔒 分布式锁</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-16')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 库</span>
@@ -1009,11 +1126,13 @@ luarocks install lua-resty-lock
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-17">
                     <h3>
                         nginx-sflow-module
                         <span class="plugin-rank">📊 流量监控</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-17')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">流量分析</span>
@@ -1051,11 +1170,13 @@ sudo make install</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-18">
                     <h3>
                         lua-resty-upload
                         <span class="plugin-rank">📤 文件上传</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-18')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 库</span>
@@ -1102,11 +1223,13 @@ luarocks install lua-resty-upload
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-19">
                     <h3>
                         nginx-module-vts
                         <span class="plugin-rank">📈 虚拟主机统计</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-19')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">流量统计</span>
@@ -1151,11 +1274,13 @@ status_format json;</code>
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-20">
                     <h3>
                         lua-resty-dns
                         <span class="plugin-rank">🌐 DNS 解析</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-20')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">Lua 库</span>
@@ -1199,11 +1324,13 @@ luarocks install lua-resty-dns
                     </div>
                 </div>
 
-                <div class="plugin-card">
+                <div class="plugin-card" id="card-21">
                     <h3>
                         nginx-allow-deny-from-args
                         <span class="plugin-rank">🔐 动态访问控制</span>
                     </h3>
+                    <button class="collapse-btn" onclick="toggleCard('card-21')">收起</button>
+                    <div class="card-content">
                     <div class="plugin-tags">
                         <span class="plugin-tag community">社区驱动</span>
                         <span class="plugin-tag">访问控制</span>
