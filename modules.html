@@ -706,8 +706,7 @@ luarocks install lua-resty-http
                 <!-- 第五类：性能优化模块 -->
                 <div class="plugin-category">
                     <h3>⚡ 性能优化模块（知名度 ★★☆☆☆）</h3>
-                
-                    </div></div>
+                </div>
 
                 <div class="plugin-card" id="card-9">
                     <h3>
@@ -716,47 +715,51 @@ luarocks install lua-resty-http
                     </h3>
                     <button class="collapse-btn" onclick="toggleCard('card-9')">收起</button>
                     <div class="card-content">
-                    <div class="plugin-tags">
-                        <span class="plugin-tag community">社区驱动</span>
-                        <span class="plugin-tag">缓存</span>
-                        <span class="plugin-tag">性能优化</span>
-                    </div>
-                    <p>
-                        <strong>ngx_cache_purge</strong> 提供 Nginx 缓存清除功能，
-                        支持按 URL 清除特定缓存、批量清除缓存。对于需要实时更新内容的场景非常有用。
-                    </p>
-                    <div class="install-section">
-                        <h4>📦 安装方式</h4>
-                        <code># 编译安装
-git clone https://github.com/FRiCKLabs/ngx_cache_purge.git
-./configure --add-module=/path/to/ngx_cache_purge
-make
-sudo make install</code>
-                    </div>
-                    <ul class="feature-list">
-                        <li>按 URL 清除缓存</li>
-                        <li>支持通配符批量清除</li>
-                        <li>HTTP API 接口</li>
-                        <li>与 proxy_cache 完美集成</li>
-                    </ul>
-                    <div class="config-example">
-                        <h4>配置示例</h4>
-                        <pre><span class="keyword">http</span> {
-    <span class="directive">proxy_cache_path</span> <span class="value">/var/cache/nginx levels=1:2 keys_zone=my_cache:10m</span>;
-    
-    <span class="keyword">server</span> {
-        <span class="keyword">location</span> <span class="value">/</span> {
-            <span class="directive">proxy_cache</span> <span class="value">my_cache</span>;
-            <span class="directive">proxy_cache_purge</span> <span class="value">PURGE from 127.0.0.1</span>;
-        }
-    }
-}
-
-<span class="comment"># 清除缓存请求</span>
-<span class="keyword">PURGE</span> <span class="value">http://example.com/image.jpg</span></pre>
-                    </div>
-                    <div class="tip-box">
-                        <strong>💡 使用场景：</strong>CMS 内容更新、商品图片刷新、API 缓存失效、静态资源更新。
+                        <div class="plugin-tags">
+                            <span class="plugin-tag community">社区驱动</span>
+                            <span class="plugin-tag">缓存</span>
+                            <span class="plugin-tag">性能优化</span>
+                        </div>
+                        <p>
+                            <strong>ngx_cache_purge</strong> 提供 Nginx 缓存清除功能，
+                            支持按 URL 清除特定缓存、批量清除缓存。对于需要实时更新内容的场景非常有用。
+                        </p>
+                        <div class="install-section">
+                            <h4>📦 安装方式</h4>
+                            <code># 编译安装
+    git clone https://github.com/FRiCKLabs/ngx_cache_purge.git
+    ./configure --add-module=/path/to/ngx_cache_purge
+    make
+    sudo make install</code>
+                        </div>
+                        <ul class="feature-list">
+                            <li>按 URL 清除缓存</li>
+                            <li>支持通配符批量清除</li>
+                            <li>HTTP API 接口</li>
+                            <li>与 proxy_cache 完美集成</li>
+                        </ul>
+                        <div class="config-example">
+                            <h4>配置示例</h4>
+                            <pre>
+                                <span class="keyword">http</span> {
+                                <span class="directive">proxy_cache_path</span> 
+                                <span class="value">/var/cache/nginx levels=1:2 keys_zone=my_cache:10m</span>;
+                                <span class="keyword">server</span> {
+                                <span class="keyword">location</span> 
+                                <span class="value">/</span> {
+                                <span class="directive">proxy_cache</span> <span class="value">my_cache</span>;
+                                <span class="directive">proxy_cache_purge</span> <span class="value">PURGE from 127.0.0.1</span>;
+                                    }
+                                }
+                            }
+                            <span class="comment"># 清除缓存请求</span>
+                            <span class="keyword">PURGE</span>
+                            <span class="value">http://example.com/image.jpg</span>
+                            </pre>
+                        </div>
+                        <div class="tip-box">
+                            <strong>💡 使用场景：</strong>CMS 内容更新、商品图片刷新、API 缓存失效、静态资源更新。
+                        </div>
                     </div>
                 </div>
 
@@ -809,6 +812,7 @@ sudo make install</code>
                         <strong>💡 使用场景：</strong>隐藏服务器信息、添加安全响应头、修复安全扫描问题、自定义响应头。
                     </div>
                 </div>
+                </div>
 
                 <div class="plugin-card" id="card-11">
                     <h3>
@@ -860,6 +864,7 @@ sudo make install</code>
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>配置测试、模拟接口、健康检查、调试变量、教学演示。
                     </div>
+                </div>
                 </div>
 
                 <div class="plugin-card" id="card-12">
@@ -914,6 +919,7 @@ sudo make install</code>
                         <strong>💡 使用场景：</strong>会话保持、购物车应用、用户登录状态、有状态服务。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-13">
                     <h3>
@@ -966,6 +972,7 @@ luarocks install lua-resty-redis
                     <div class="tip-box">
                         <strong>💡 使用场景：</strong>缓存层、会话存储、计数器、分布式锁、消息队列。
                     </div>
+                </div>
                 </div>
 
                 <div class="plugin-card" id="card-14">
@@ -1070,6 +1077,7 @@ sudo make install</code>
                         <strong>💡 使用场景：</strong>A/B 测试、灰度发布、注入分析脚本、内容本地化、临时修复前端问题。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-16">
                     <h3>
@@ -1125,6 +1133,7 @@ luarocks install lua-resty-lock
                         <strong>💡 使用场景：</strong>缓存穿透保护、定时任务防重、并发请求合并、资源访问控制。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-17">
                     <h3>
@@ -1169,6 +1178,7 @@ sudo make install</code>
                         <strong>💡 使用场景：</strong>大规模流量监控、DDoS 检测、网络性能分析、容量规划。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-18">
                     <h3>
@@ -1222,6 +1232,7 @@ luarocks install lua-resty-upload
                         <strong>💡 使用场景：</strong>大文件上传、图片视频上传、分片上传、文件处理流水线。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-19">
                     <h3>
@@ -1273,6 +1284,7 @@ status_format json;</code>
                         <strong>💡 使用场景：</strong>多租户流量统计、按域名监控、计费依据、流量分析。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-20">
                     <h3>
@@ -1323,6 +1335,7 @@ luarocks install lua-resty-dns
                         <strong>💡 使用场景：</strong>动态服务发现、DNS 负载均衡、服务注册发现、微服务架构。
                     </div>
                 </div>
+            </div>
 
                 <div class="plugin-card" id="card-21">
                     <h3>
@@ -1363,6 +1376,7 @@ location /api {
                         <strong>💡 使用场景：</strong>API 访问控制、多租户隔离、动态权限、临时访问授权。
                     </div>
                 </div>
+            </div>
 
                 <!-- 模块对比表 -->
                 <h3 style="margin-top: 40px;">📊 模块对比总览</h3>
@@ -1560,11 +1574,6 @@ location /api {
         </section>
     </main>
 
-    <footer class="footer" style="text-align: center; padding: 20px; color: #666; font-size: 14px; border-top: 1px solid #e0e0e0; margin-top: 40px;">
-        <p>📖 提示：生产环境使用第三方模块前，请充分测试兼容性和稳定性。</p>
-        <p style="margin-top: 8px;">🎨 创意插件可以扩展 Nginx 功能，但请根据实际需求谨慎选择。</p>
-    </footer>
-
     <script>
         // 单个卡片折叠功能
         function toggleCard(cardId) {
@@ -1615,7 +1624,7 @@ location /api {
                 }
             });
             
-            btn.textContent = allExpanded ? '📌 全部展开' : '📌 全部收起';
+            btn.textContent = allExpanded ? '📌 全部收起' : '📌 全部展开';
         }
 
         // 页面加载时初始化：所有卡片默认展开
