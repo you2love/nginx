@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 替代品 - 类似 Web 服务器与反向代理工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .alt-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+        .alt-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .alt-card h3 {
+            margin: 0 0 15px 0;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .alt-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .alt-badge.c-plus-plus {
+            background: linear-gradient(135deg, #00599C, #004482);
+        }
+        .alt-badge.rust {
+            background: linear-gradient(135deg, #DEA584, #8B4513);
+        }
+        .alt-badge.go {
+            background: linear-gradient(135deg, #00ADD8, #007D9C);
+        }
+        .alt-badge.java {
+            background: linear-gradient(135deg, #f89820, #5382a1);
+        }
+        .alt-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .alt-tag {
+            padding: 5px 12px;
+            background: #f0f4ff;
+            color: #5c6bc0;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .alt-tag.pro {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .alt-tag.enterprise {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .alt-card p {
+            color: #555;
+            line-height: 1.9;
+            margin: 15px 0;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        .comparison-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .comparison-item h4 {
+            margin: 0 0 12px 0;
+            color: #333;
+            font-size: 15px;
+        }
+        .comparison-item ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+            line-height: 2;
+        }
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .pros {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .cons {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .pros h4 {
+            color: #2e7d32;
+            margin: 0 0 12px 0;
+        }
+        .cons h4 {
+            color: #c62828;
+            margin: 0 0 12px 0;
+        }
+        .pros ul, .cons ul {
+            margin: 0;
+            padding-left: 20px;
+            line-height: 2;
+        }
+        .pros li {
+            color: #2e7d32;
+        }
+        .cons li {
+            color: #c62828;
+        }
+        .use-case-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .use-case-box h4 {
+            color: #1565c0;
+            margin: 0 0 12px 0;
+        }
+        .use-case-box ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #424242;
+            line-height: 2;
+        }
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .performance-table th, .performance-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e8eaed;
+        }
+        .performance-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+        .performance-table tr:hover {
+            background: #f5f5f5;
+        }
+        .performance-table .best {
+            background: #e8f5e9;
+            font-weight: 600;
+        }
+        .nav-link.alt-link {
+            background: #ff9800;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .nav-link.alt-link:hover {
+            background: #f57c00;
+        }
+        .scenario-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        .scenario-section h3 {
+            color: white;
+            margin-top: 0;
+        }
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .scenario-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        .scenario-item h4 {
+            color: white;
+            margin: 0 0 10px 0;
+        }
+        .scenario-item p {
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>Nginx 深度学习</h1>
+                <p class="tagline">揭秘内部机制，掌握核心配置</p>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="mechanism.html" class="nav-link">内部机制</a>
+                <a href="request-flow.html" class="nav-link">请求处理</a>
+                <a href="directives.html" class="nav-link">指令详解</a>
+                <a href="configs.html" class="nav-link">应用配置</a>
+                <a href="debug.html" class="nav-link">日志调试</a>
+                <a href="tools.html" class="nav-link">周边工具</a>
+                <a href="modules.html" class="nav-link">插件系统</a>
+                <a href="source-code.html" class="nav-link">源码解读</a>
+                <a href="alternatives.html" class="nav-link alt-link active">替代品</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- 性能对比 -->
+        <section class="section">
+            <div class="container">
+                <h3>📊 性能对比总览</h3>
+                <table class="performance-table">
+                    <thead>
+                        <tr>
+                            <th>工具</th>
+                            <th>语言</th>
+                            <th>并发能力</th>
+                            <th>内存占用</th>
+                            <th>配置复杂度</th>
+                            <th>适用场景</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="best">
+                            <td><strong>Nginx</strong></td>
+                            <td>C</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                            <td>低</td>
+                            <td>中等</td>
+                            <td>通用 Web 服务、反向代理</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenResty</strong></td>
+                            <td>C + Lua</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                            <td>低</td>
+                            <td>中等</td>
+                            <td>API 网关、动态内容</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Traefik</strong></td>
+                            <td>Go</td>
+                            <td>⭐⭐⭐⭐☆</td>
+                            <td>中</td>
+                            <td>低</td>
+                            <td>云原生、微服务</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Caddy</strong></td>
+                            <td>Go</td>
+                            <td>⭐⭐⭐⭐☆</td>
+                            <td>中</td>
+                            <td>极低</td>
+                            <td>快速部署、自动 HTTPS</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HAProxy</strong></td>
+                            <td>C</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                            <td>极低</td>
+                            <td>中等</td>
+                            <td>专业负载均衡</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Apache</strong></td>
+                            <td>C</td>
+                            <td>⭐⭐⭐☆☆</td>
+                            <td>高</td>
+                            <td>中等</td>
+                            <td>传统 Web 服务、.htaccess</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Envoy</strong></td>
+                            <td>C++</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                            <td>中高</td>
+                            <td>高</td>
+                            <td>服务网格、微服务</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OpenWrt/uHTTPd</strong></td>
+                            <td>C</td>
+                            <td>⭐⭐☆☆☆</td>
+                            <td>极低</td>
+                            <td>低</td>
+                            <td>嵌入式设备</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 主要替代品详细介绍 -->
+        <section class="section">
+            <div class="container">
+                <h2>一、云原生与现代代理</h2>
+
+                <!-- Traefik -->
+                <div class="alt-card">
+                    <h3>
+                        Traefik
+                        <span class="alt-badge go">Go 语言</span>
+                    </h3>
+                    <div class="alt-tags">
+                        <span class="alt-tag pro">云原生首选</span>
+                        <span class="alt-tag">自动服务发现</span>
+                        <span class="alt-tag">Kubernetes 集成</span>
+                        <span class="alt-tag">自动 HTTPS</span>
+                    </div>
+                    <p>
+                        <strong>Traefik</strong> 是专为微服务和云原生设计的反向代理/负载均衡器。
+                        最大特点是自动服务发现，能够自动从 Docker、Kubernetes、Consul 等注册中心获取路由配置，
+                        无需手动编写配置文件。支持自动 HTTPS 证书申请和续期。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>自动服务发现，零配置更新</li>
+                                <li>与 Docker/K8s 深度集成</li>
+                                <li>内置 Let's Encrypt 自动 HTTPS</li>
+                                <li>Web UI 仪表盘，可视化配置</li>
+                                <li>支持多种协议（HTTP、TCP、UDP）</li>
+                                <li>中间件系统灵活强大</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>静态文件服务性能不如 Nginx</li>
+                                <li>内存占用相对较高</li>
+                                <li>复杂配置学习曲线陡峭</li>
+                                <li>社区生态不如 Nginx 成熟</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>微服务架构：</strong>自动发现并路由到各个微服务</li>
+                            <li><strong>Docker/K8s 环境：</strong>容器化应用的入口网关</li>
+                            <li><strong>多租户 SaaS：</strong>动态路由到不同租户实例</li>
+                            <li><strong>快速原型开发：</strong>自动 HTTPS，快速部署</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-item">
+                            <h4>📦 快速开始</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;"># Docker 一键启动
+docker run -d \
+  -p 80:80 -p 443:443 \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  traefik:v2.10</pre>
+                        </div>
+                        <div class="comparison-item">
+                            <h4>📝 配置示例</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;"># Docker Compose 标签方式
+labels:
+  - "traefik.http.routers.api.rule=Host(`api.example.com`)"
+  - "traefik.http.services.api.loadbalancer.server.port=8080"</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caddy -->
+                <div class="alt-card">
+                    <h3>
+                        Caddy
+                        <span class="alt-badge go">Go 语言</span>
+                    </h3>
+                    <div class="alt-tags">
+                        <span class="alt-tag pro">配置最简单</span>
+                        <span class="alt-tag">自动 HTTPS</span>
+                        <span class="alt-tag">HTTP/3 支持</span>
+                        <span class="alt-tag">单二进制</span>
+                    </div>
+                    <p>
+                        <strong>Caddy</strong> 是一款现代化的 Web 服务器，以"配置最简单"著称。
+                        默认自动启用 HTTPS，自动申请和续期 Let's Encrypt 证书。
+                        配置文件 Caddyfile 语法简洁直观，学习成本极低。
+                        支持 HTTP/3（QUIC）协议，性能优秀。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>默认自动 HTTPS，零配置</li>
+                                <li>配置语法极其简洁</li>
+                                <li>HTTP/3 开箱即用</li>
+                                <li>单二进制文件，部署简单</li>
+                                <li>内存安全（Go 语言）</li>
+                                <li>活跃的社区和插件生态</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>性能略低于 Nginx（约 70-80%）</li>
+                                <li>内存占用高于 Nginx</li>
+                                <li>高级功能不如 Nginx 丰富</li>
+                                <li>企业级应用案例相对较少</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>个人项目/博客：</strong>快速部署，自动 HTTPS</li>
+                            <li><strong>小型企业网站：</strong>简单配置，维护成本低</li>
+                            <li><strong>开发测试环境：</strong>快速搭建本地 HTTPS</li>
+                            <li><strong>API 服务：</strong>简洁的反向代理配置</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-item">
+                            <h4>📦 安装</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;"># Linux
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
+apt update && apt install caddy</pre>
+                        </div>
+                        <div class="comparison-item">
+                            <h4>📝 配置示例</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;"># Caddyfile - 仅需几行
+example.com {
+    reverse_proxy localhost:8080
+    encode gzip
+}
+
+api.example.com {
+    reverse_proxy localhost:3000
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2>二、专业负载均衡器</h2>
+
+                <!-- HAProxy -->
+                <div class="alt-card">
+                    <h3>
+                        HAProxy
+                        <span class="alt-badge c-plus-plus">C 语言</span>
+                    </h3>
+                    <div class="alt-tags">
+                        <span class="alt-tag pro">负载均衡专家</span>
+                        <span class="alt-tag">高性能</span>
+                        <span class="alt-tag">TCP/HTTP</span>
+                        <span class="alt-tag">健康检查</span>
+                    </div>
+                    <p>
+                        <strong>HAProxy</strong> 是专业的高性能 TCP/HTTP 负载均衡器，
+                        在负载均衡领域的功能深度和性能都优于 Nginx。
+                        被 Twitter、GitHub、Instagram 等大公司广泛使用。
+                        特别适合需要复杂负载均衡策略的场景。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>负载均衡算法最丰富</li>
+                                <li>性能极高，延迟极低</li>
+                                <li>健康检查功能最强大</li>
+                                <li>支持 TCP 层负载均衡</li>
+                                <li>配置灵活，细粒度控制</li>
+                                <li>成熟的集群和高可用方案</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>静态文件服务能力弱</li>
+                                <li>不支持动态内容生成</li>
+                                <li>配置语法较复杂</li>
+                                <li>功能单一，需配合其他工具</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>数据库负载均衡：</strong>MySQL、PostgreSQL 读写分离</li>
+                            <li><strong>高并发 API：</strong>后端服务集群负载均衡</li>
+                            <li><strong>高可用架构：</strong>Keepalived + HAProxy 主备</li>
+                            <li><strong>复杂路由策略：</strong>基于 Cookie、Header 的精细路由</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-item">
+                            <h4>📦 安装</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;"># Ubuntu/Debian
+apt install haproxy
+
+# CentOS/RHEL
+yum install haproxy
+
+# 查看版本
+haproxy -v</pre>
+                        </div>
+                        <div class="comparison-item">
+                            <h4>📝 配置示例</h4>
+                            <pre style="background:#2d3748;color:#68d391;padding:15px;border-radius:6px;font-size:13px;margin:0;">global
+    maxconn 4096
+    daemon
+
+defaults
+    mode http
+    timeout connect 5s
+    timeout client 50s
+    timeout server 50s
+
+frontend http_front
+    bind *:80
+    default_backend web_servers
+
+backend web_servers
+    balance roundrobin
+    server web1 192.168.1.1:8080 check
+    server web2 192.168.1.2:8080 check</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Envoy -->
+                <div class="alt-card">
+                    <h3>
+                        Envoy Proxy
+                        <span class="alt-badge c-plus-plus">C++ 语言</span>
+                    </h3>
+                    <div class="alt-tags">
+                        <span class="alt-tag enterprise">服务网格标准</span>
+                        <span class="alt-tag">L7 代理</span>
+                        <span class="alt-tag">xDS API</span>
+                        <span class="alt-tag">可观测性</span>
+                    </div>
+                    <p>
+                        <strong>Envoy</strong> 是 CNCF 毕业项目，专为服务网格设计的高性能代理。
+                        被 Istio 选为默认数据平面，已成为云原生领域的标准组件。
+                        提供强大的可观测性（指标、日志、追踪）和动态配置能力。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>服务网格领域标准</li>
+                                <li>强大的可观测性</li>
+                                <li>动态配置（xDS API）</li>
+                                <li>支持多种协议（HTTP/2、gRPC）</li>
+                                <li>先进的负载均衡算法</li>
+                                <li>热重启支持</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>配置极其复杂</li>
+                                <li>学习曲线陡峭</li>
+                                <li>资源占用较高</li>
+                                <li>不适合简单场景</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>服务网格：</strong>Istio、Linkerd 的数据平面</li>
+                            <li><strong>微服务边车代理：</strong>Sidecar 模式</li>
+                            <li><strong>API 网关：</strong>复杂的路由和策略控制</li>
+                            <li><strong>可观测性平台：</strong>指标收集、分布式追踪</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2>三、传统与通用 Web 服务器</h2>
+
+                <!-- Apache -->
+                <div class="alt-card">
+                    <h3>
+                        Apache HTTP Server
+                        <span class="alt-badge c-plus-plus">C 语言</span>
+                    </h3>
+                    <div class="alt-tags">
+                        <span class="alt-tag enterprise">历史最悠久</span>
+                        <span class="alt-tag">.htaccess</span>
+                        <span class="alt-tag">模块丰富</span>
+                        <span class="alt-tag">稳定可靠</span>
+                    </div>
+                    <p>
+                        <strong>Apache</strong> 是最经典的 Web 服务器，曾经占据市场主导地位。
+                        虽然在高并发场景下性能不如 Nginx，但在某些场景仍有优势：
+                        支持 .htaccess 动态配置、丰富的模块生态、与 PHP 的深度集成（mod_php）。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>.htaccess 支持动态配置</li>
+                                <li>模块生态最丰富</li>
+                                <li>mod_php 与 PHP 深度集成</li>
+                                <li>文档和社区资源最丰富</li>
+                                <li>配置灵活，支持覆盖</li>
+                                <li>稳定可靠，久经考验</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>高并发性能较差</li>
+                                <li>内存占用高</li>
+                                <li>进程/线程模型开销大</li>
+                                <li>静态文件服务性能低</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>共享主机：</strong>.htaccess 允许用户自定义配置</li>
+                            <li><strong>传统 PHP 应用：</strong>WordPress、Drupal 等</li>
+                            <li><strong>企业内网：</strong>稳定可靠，维护简单</li>
+                            <li><strong>开发环境：</strong>配置灵活，调试方便</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- OpenResty -->
+                <div class="alt-card">
+                    <h3>
+                        OpenResty
+                        <span class="alt-badge">C + LuaJIT</span>
+                    </h3>
+                    <div class="alt-tags>
+                        <span class="alt-tag pro">Nginx 增强版</span>
+                        <span class="alt-tag">Lua 脚本</span>
+                        <span class="alt-tag">API 网关</span>
+                        <span class="alt-tag">高性能</span>
+                    </div>
+                    <p>
+                        <strong>OpenResty</strong> 基于 Nginx，集成了 ngx_lua 模块和 LuaJIT。
+                        严格来说不是替代品，而是 Nginx 的增强版本。
+                        允许在 Nginx 中直接编写 Lua 脚本，实现复杂的业务逻辑，
+                        被 Cloudflare、GitHub 等公司广泛使用。
+                    </p>
+                    
+                    <div class="pros-cons">
+                        <div class="pros">
+                            <h4>✅ 优势</h4>
+                            <ul>
+                                <li>继承 Nginx 所有功能</li>
+                                <li>Lua 脚本实现动态逻辑</li>
+                                <li>极高的性能（LuaJIT 编译）</li>
+                                <li>热代码加载，无需重启</li>
+                                <li>丰富的 lua-resty 库</li>
+                                <li>协程和非阻塞 I/O</li>
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h4>❌ 劣势</h4>
+                            <ul>
+                                <li>需要学习 Lua 语言</li>
+                                <li>调试相对复杂</li>
+                                <li>Lua 代码质量影响整体性能</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="use-case-box">
+                        <h4>🎯 典型使用场景</h4>
+                        <ul>
+                            <li><strong>API 网关：</strong>请求路由、认证、限流</li>
+                            <li><strong>WAF 防火墙：</strong>实时请求过滤</li>
+                            <li><strong>A/B 测试：</strong>动态内容分发</li>
+                            <li><strong>边缘计算：</strong>CDN 节点逻辑处理</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 场景推荐 -->
+        <section class="section">
+            <div class="container">
+                <div class="scenario-section">
+                    <h3>🎯 如何选择？按场景推荐</h3>
+                    <div class="scenario-grid">
+                        <div class="scenario-item">
+                            <h4>🏠 个人博客/小网站</h4>
+                            <p><strong>推荐：Caddy</strong><br>配置最简单，自动 HTTPS，省心省力</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>🐳 Docker/K8s 环境</h4>
+                            <p><strong>推荐：Traefik</strong><br>自动服务发现，与容器生态完美集成</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>⚖️ 专业负载均衡</h4>
+                            <p><strong>推荐：HAProxy</strong><br>负载均衡领域最专业，性能最优</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>🔗 服务网格</h4>
+                            <p><strong>推荐：Envoy</strong><br>服务网格标准，Istio 默认选择</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>📝 共享主机</h4>
+                            <p><strong>推荐：Apache</strong><br>.htaccess 支持用户自定义配置</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>🔌 API 网关</h4>
+                            <p><strong>推荐：OpenResty</strong><br>Lua 脚本实现复杂业务逻辑</p>
+                        </div>
+                        <div class="scenario-item">
+                            <h4>🌐 通用 Web 服务</h4>
+                            <p><strong>推荐：Nginx</strong><br>性能与功能平衡，生态最成熟</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 总结对比 -->
+        <section class="section bg-light">
+            <div class="container">
+                <h3>💡 总结建议</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <h4>🏆 综合最佳</h4>
+                        <p style="margin:10px 0;"><strong>Nginx</strong> 仍然是通用场景的最佳选择，性能、功能、生态都很成熟。</p>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>🚀 云原生首选</h4>
+                        <p style="margin:10px 0;"><strong>Traefik</strong> 或 <strong>Envoy</strong>，与 Kubernetes 和微服务架构深度集成。</p>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>⚡ 最简单部署</h4>
+                        <p style="margin:10px 0;"><strong>Caddy</strong> 配置最简洁，自动 HTTPS，适合快速部署。</p>
+                    </div>
+                    <div class="comparison-item">
+                        <h4>🎯 专业负载均衡</h4>
+                        <p style="margin:10px 0;"><strong>HAProxy</strong> 在负载均衡领域的功能深度无人能及。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
