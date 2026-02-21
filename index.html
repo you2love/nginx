@@ -12,6 +12,41 @@
         .future-card:hover {
             transform: translateY(-5px);
         }
+        /* 学习路径样式优化 - 缩小图标和间距 */
+        .learning-path {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .path-item {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+            margin: 0 auto 10px;
+        }
+        .path-item h3 {
+            font-size: 15px;
+            margin: 8px 0;
+        }
+        .path-item p {
+            font-size: 13px;
+            margin: 6px 0;
+        }
+        .path-arrow {
+            font-size: 18px;
+            color: #999;
+        }
     </style>
 </head>
 <body>
